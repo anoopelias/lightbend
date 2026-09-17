@@ -38,46 +38,55 @@ export function drawCells(board) {
   }
 }
 
+// Drawn as an emitter tube pointing the direction it fires, rather than a
+// plain dot -- the shape itself reads as "source", clearly distinct from
+// the target's ring, and needs no separate direction indicator.
 export function drawSource(board, state, time) {
   const { ctx, cellCenter } = board;
   const c = cellCenter(state.source.col, state.source.row);
-  const pulse = 1 + 0.06 * Math.sin(time / 260);
-  const radius = 9 * pulse;
+  const pulse = 1 + 0.08 * Math.sin(time / 260);
   const color = LIGHT[state.source.color];
-
-  const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, radius * 2.2);
-  glow.addColorStop(0, `rgba(${color.glow}, 0.55)`);
-  glow.addColorStop(1, `rgba(${color.glow}, 0)`);
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(c.x, c.y, radius * 2.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  const grad = ctx.createLinearGradient(c.x - radius, c.y - radius, c.x + radius, c.y + radius);
-  grad.addColorStop(0, color.core);
-  grad.addColorStop(1, color.mid);
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
-  ctx.fill();
-
-  // arrow pointing the direction the beam is emitted
   const dir = DIRS[state.source.dir];
   const angle = Math.atan2(dir.y, dir.x);
-  const tip = radius + 9;
-  const base = radius + 1;
-  const halfWidth = 4;
+
+  const bodyLen = 20;
+  const bodyWidth = 11;
+  const muzzleRadius = 5.5 * pulse;
 
   ctx.save();
   ctx.translate(c.x, c.y);
   ctx.rotate(angle);
+
+  // glow spilling out of the open front end
+  const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, muzzleRadius * 2.6);
+  glow.addColorStop(0, `rgba(${color.glow}, 0.6)`);
+  glow.addColorStop(1, `rgba(${color.glow}, 0)`);
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.moveTo(tip, 0);
-  ctx.lineTo(base, -halfWidth);
-  ctx.lineTo(base, halfWidth);
-  ctx.closePath();
-  ctx.fillStyle = color.mid;
+  ctx.arc(0, 0, muzzleRadius * 2.6, 0, Math.PI * 2);
   ctx.fill();
+
+  // dark metal tube body, trailing back from the muzzle at the cell center
+  roundRect(ctx, -bodyLen, -bodyWidth / 2, bodyLen + 2, bodyWidth, bodyWidth / 2);
+  const bodyGrad = ctx.createLinearGradient(0, -bodyWidth / 2, 0, bodyWidth / 2);
+  bodyGrad.addColorStop(0, "#3a3f47");
+  bodyGrad.addColorStop(0.5, "#7c8994");
+  bodyGrad.addColorStop(1, "#2a2e35");
+  ctx.fillStyle = bodyGrad;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // glowing core visible through the muzzle
+  const core = ctx.createRadialGradient(0, 0, 0.5, 0, 0, muzzleRadius);
+  core.addColorStop(0, color.core);
+  core.addColorStop(1, color.mid);
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(0, 0, muzzleRadius, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
 }
 
