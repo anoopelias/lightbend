@@ -117,6 +117,27 @@ function drawMirrorGlyph(ctx, len) {
   ctx.stroke();
 }
 
+// Drawn as a single even, glassy stroke -- unlike the mirror, the splitter
+// is two-sided (a beam behaves the same hitting it from either direction),
+// so there's no front/back shading to distinguish.
+function drawSplitterGlyph(ctx, len) {
+  ctx.lineCap = "round";
+  ctx.lineWidth = 2.4;
+
+  const grad = ctx.createLinearGradient(-len / 2, 0, len / 2, 0);
+  grad.addColorStop(0, "#7fc4e8");
+  grad.addColorStop(0.5, "#f0fbff");
+  grad.addColorStop(1, "#7fc4e8");
+  ctx.strokeStyle = grad;
+  ctx.shadowColor = "rgba(127, 196, 232, 0.6)";
+  ctx.shadowBlur = 5;
+  ctx.beginPath();
+  ctx.moveTo(-len / 2, 0);
+  ctx.lineTo(len / 2, 0);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
 // `valid` says whether the dragged mirror can be dropped on view.dragSnapCell.
 export function drawSnapTarget(board, view, valid) {
   if (!view.dragging || !view.dragSnapCell) return;
@@ -132,21 +153,24 @@ export function drawSnapTarget(board, view, valid) {
   ctx.restore();
 }
 
-export function drawMirror(board, mirror, view) {
+// Shared by drawMirror and drawSplitter: the hover glow, drag-ghost and
+// drag-scale treatment are identical for every tool -- only the glyph itself
+// (drawn by `glyph(ctx, len)`) differs.
+function drawToolBase(board, tool, view, glyph) {
   const { ctx, cellCenter, cellSize } = board;
   const len = cellSize * 0.62;
 
   if (view.dragging) {
-    // faint ghost marking the mirror's position until it's dropped
-    const orig = cellCenter(mirror.col, mirror.row);
+    // faint ghost marking the tool's position until it's dropped
+    const orig = cellCenter(tool.col, tool.row);
     ctx.save();
     ctx.globalAlpha = 0.25;
     ctx.translate(orig.x, orig.y);
-    ctx.rotate(view.mirrorAngle);
-    drawMirrorGlyph(ctx, len);
+    ctx.rotate(view.angle);
+    glyph(ctx, len);
     ctx.restore();
-  } else if (view.hoveringMirror) {
-    const c = cellCenter(mirror.col, mirror.row);
+  } else if (view.hovering) {
+    const c = cellCenter(tool.col, tool.row);
     const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, cellSize * 0.5);
     glow.addColorStop(0, "rgba(255, 255, 255, 0.14)");
     glow.addColorStop(1, "rgba(255, 255, 255, 0)");
@@ -156,14 +180,22 @@ export function drawMirror(board, mirror, view) {
     ctx.fill();
   }
 
-  const c = view.dragging ? view.dragPos : cellCenter(mirror.col, mirror.row);
+  const c = view.dragging ? view.dragPos : cellCenter(tool.col, tool.row);
 
   ctx.save();
   ctx.translate(c.x, c.y);
-  ctx.rotate(view.mirrorAngle);
+  ctx.rotate(view.angle);
   if (view.dragging) ctx.scale(1.15, 1.15);
-  drawMirrorGlyph(ctx, len);
+  glyph(ctx, len);
   ctx.restore();
+}
+
+export function drawMirror(board, mirror, view) {
+  drawToolBase(board, mirror, view, drawMirrorGlyph);
+}
+
+export function drawSplitter(board, splitter, view) {
+  drawToolBase(board, splitter, view, drawSplitterGlyph);
 }
 
 // Mutates view.ripple (clears it once the hit-pulse animation finishes).

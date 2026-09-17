@@ -63,6 +63,18 @@ export const LEVELS = [
     ],
     mirrorCount: 3,
   },
+  {
+    sources: [{ col: 1, row: 7, dir: "right", color: "green" }],
+    targets: [
+      { col: 9, row: 3, color: "green" },
+      { col: 8, row: 4, color: "green" },
+      { col: 4, row: 4, color: "green" },
+      { col: 6, row: 5, color: "green" },
+      { col: 6, row: 11, color: "green" },
+    ],
+    mirrorCount: 0,
+    splitterCount: 3,
+  },
 ];
 
 export class Source {
@@ -83,6 +95,7 @@ export class Target {
 }
 
 export class Mirror {
+  kind = "mirror";
   col = null;
   row = null;
   step = 0;
@@ -120,6 +133,41 @@ export class Mirror {
   }
 }
 
+export class Splitter {
+  kind = "splitter";
+  col = null;
+  row = null;
+  step = 0;
+  placed = false;
+
+  rotate() {
+    this.step = (this.step + 1) % 8;
+  }
+
+  moveTo(col, row) {
+    this.col = col;
+    this.row = row;
+    this.placed = true;
+  }
+
+  isAt(col, row) {
+    return this.placed && col === this.col && row === this.row;
+  }
+
+  // The splitter is a two-sided glass line resting at one of 8 orientations
+  // (45deg apart, step 0-7 -- unlike the mirror, `step` is the line itself,
+  // not a face normal, since both sides behave the same). A beam always
+  // keeps going straight through unaffected. On top of that, a beam that
+  // hits the line at 45deg also spawns a second beam perpendicular to it;
+  // one that hits it straight-on (parallel to the line, or square into its
+  // face) doesn't -- returns that second beam's direction, or undefined.
+  split(dir) {
+    const d = DIR_ORDER.indexOf(dir);
+    if ((d - this.step) % 2 === 0) return undefined; // square with the line either way -- no split
+    return DIR_ORDER[(((2 * this.step - d) % 8) + 8) % 8];
+  }
+}
+
 export class GameState {
   constructor(levelIndex = 0) {
     this.loadLevel(levelIndex);
@@ -130,7 +178,10 @@ export class GameState {
     this.levelIndex = index;
     this.sources = level.sources.map((s) => new Source(s.col, s.row, s.dir, s.color));
     this.targets = level.targets.map((t) => new Target(t.col, t.row, t.color));
-    this.mirrors = Array.from({ length: level.mirrorCount }, () => new Mirror());
+    this.tools = [
+      ...Array.from({ length: level.mirrorCount ?? 0 }, () => new Mirror()),
+      ...Array.from({ length: level.splitterCount ?? 0 }, () => new Splitter()),
+    ];
   }
 
   get hasNextLevel() {
@@ -141,61 +192,76 @@ export class GameState {
     if (this.hasNextLevel) this.loadLevel(this.levelIndex + 1);
   }
 
-  mirrorAt(col, row) {
-    return this.mirrors.find((m) => m.isAt(col, row));
+  toolAt(col, row) {
+    return this.tools.find((t) => t.isAt(col, row));
   }
 
-  // `ignoring` lets a mirror being repositioned drop back onto its own cell.
-  canPlaceMirror(col, row, ignoring = null) {
+  // `ignoring` lets a tool being repositioned drop back onto its own cell.
+  canPlaceTool(col, row, ignoring = null) {
     if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
     if (this.sources.some((s) => s.col === col && s.row === row)) return false;
     if (this.targets.some((t) => t.col === col && t.row === row)) return false;
-    if (this.mirrors.some((m) => m !== ignoring && m.isAt(col, row))) return false;
+    if (this.tools.some((t) => t !== ignoring && t.isAt(col, row))) return false;
     return true;
   }
 
-  // Places `mirror` on the grid (from the palette, or repositions it if
+  // Places `tool` on the grid (from the palette, or repositions it if
   // already placed).
-  moveMirror(mirror, col, row) {
-    if (!this.canPlaceMirror(col, row, mirror)) return false;
-    mirror.moveTo(col, row);
+  moveTool(tool, col, row) {
+    if (!this.canPlaceTool(col, row, tool)) return false;
+    tool.moveTo(col, row);
     return true;
   }
 
-  // Traces one source's beam through the mirrors until it exits the grid or
-  // is blocked. Targets never block it -- it passes straight through,
-  // whether or not their color matches. Returns the grid-space cells
-  // (col/row, not pixels) and the full set of cells visited, as "col,row"
-  // keys (used to check which colors pass through a given target).
+  // Traces one source's beam, following it (and any beams a splitter spawns
+  // off it) until each ray exits the grid or is blocked by a mirror. Targets
+  // never block a beam -- it passes straight through, whether or not their
+  // color matches. A splitter doesn't redirect a beam like a mirror does --
+  // the beam keeps going, and a second one branches off perpendicular to it
+  // (see Splitter.split) -- so one source can produce several ray segments.
+  // Returns those segments (each a list of grid-space cells, for drawing)
+  // and the full set of cells visited across all of them, as "col,row" keys
+  // (used to check which colors pass through a given target).
   computeBeamFor(source) {
-    const cells = [{ col: source.col, row: source.row }];
-    const visited = new Set([`${source.col},${source.row}`]);
-    let col = source.col;
-    let row = source.row;
-    let dir = source.dir;
+    const visited = new Set();
+    const segments = [];
 
-    for (let steps = 0; steps < COLS * ROWS + 2; steps++) {
-      const d = DIRS[dir];
-      col += d.x;
-      row += d.y;
-
-      if (col < 0 || col >= COLS || row < 0 || row >= ROWS) {
-        cells.push({ col, row });
-        break;
-      }
+    const trace = (col, row, dir) => {
+      const segment = [{ col, row }];
       visited.add(`${col},${row}`);
 
-      const mirror = this.mirrorAt(col, row);
-      if (mirror) {
-        cells.push({ col, row });
-        const outDir = mirror.reflect(dir);
-        if (!outDir) break; // hit the black side -- blocked
-        dir = outDir;
-        continue;
-      }
-    }
+      for (let steps = 0; steps < COLS * ROWS + 2; steps++) {
+        const d = DIRS[dir];
+        col += d.x;
+        row += d.y;
 
-    return { cells, visited };
+        if (col < 0 || col >= COLS || row < 0 || row >= ROWS) {
+          segment.push({ col, row });
+          break;
+        }
+        visited.add(`${col},${row}`);
+
+        const tool = this.toolAt(col, row);
+        if (tool?.kind === "mirror") {
+          segment.push({ col, row });
+          const outDir = tool.reflect(dir);
+          if (!outDir) break; // hit the black side -- blocked
+          dir = outDir;
+          continue;
+        }
+        if (tool?.kind === "splitter") {
+          segment.push({ col, row });
+          const branchDir = tool.split(dir);
+          if (branchDir) segments.push(trace(col, row, branchDir));
+          continue; // the beam itself always keeps going, same direction
+        }
+      }
+
+      return segment;
+    };
+
+    segments.push(trace(source.col, source.row, source.dir));
+    return { segments, visited };
   }
 
   // Traces every source's beam. A target lights up only if the exact set of
