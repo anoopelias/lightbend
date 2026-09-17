@@ -1,4 +1,4 @@
-import { COLS, ROWS } from "./logic.js";
+import { COLS, ROWS, DIRS } from "./logic.js";
 
 // ---------- Drawing (pure: reads state + transient view, writes to canvas) ----------
 
@@ -60,20 +60,47 @@ export function drawSource(rc, state, time) {
   ctx.beginPath();
   ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
   ctx.fill();
+
+  // arrow pointing the direction the beam is emitted
+  const dir = DIRS[state.source.dir];
+  const angle = Math.atan2(dir.y, dir.x);
+  const tip = radius + 9;
+  const base = radius + 1;
+  const halfWidth = 4;
+
+  ctx.save();
+  ctx.translate(c.x, c.y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(tip, 0);
+  ctx.lineTo(base, -halfWidth);
+  ctx.lineTo(base, halfWidth);
+  ctx.closePath();
+  ctx.fillStyle = color.mid;
+  ctx.fill();
+  ctx.restore();
 }
 
+// Drawn as a thin two-sided card: a reflective metallic face and a black
+// backing, so which side is the mirror face reads at a glance.
 function drawMirrorGlyph(ctx, len) {
-  const grad = ctx.createLinearGradient(-len / 2, 0, len / 2, 0);
+  ctx.lineCap = "round";
+  ctx.lineWidth = 2;
+
+  const grad = ctx.createLinearGradient(-len / 2, -1, len / 2, -1);
   grad.addColorStop(0, "#7c8994");
   grad.addColorStop(0.5, "#eef3f6");
   grad.addColorStop(1, "#55606b");
-
   ctx.strokeStyle = grad;
-  ctx.lineWidth = 4;
-  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(-len / 2, 0);
-  ctx.lineTo(len / 2, 0);
+  ctx.moveTo(-len / 2, -1);
+  ctx.lineTo(len / 2, -1);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#0e1014";
+  ctx.beginPath();
+  ctx.moveTo(-len / 2, 1);
+  ctx.lineTo(len / 2, 1);
   ctx.stroke();
 }
 

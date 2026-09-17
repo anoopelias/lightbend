@@ -209,7 +209,8 @@ paletteMirrorSlot.addEventListener("pointerdown", (e) => {
           <stop offset="1" stop-color="#55606b" />
         </linearGradient>
       </defs>
-      <line x1="4" y1="20" x2="20" y2="4" stroke="url(#mirror-gradient-ghost)" />
+      <line x1="3.4" y1="19.4" x2="19.4" y2="3.4" stroke="url(#mirror-gradient-ghost)" stroke-width="1.8" />
+      <line x1="4.6" y1="20.6" x2="20.6" y2="4.6" stroke="#0e1014" stroke-width="1.8" />
     </svg>`;
   document.body.appendChild(ghost);
   ghost.style.left = `${e.clientX}px`;
