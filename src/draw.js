@@ -139,8 +139,18 @@ function drawSplitterGlyph(ctx, len) {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  const capHalf = len * 0.18;
+  const capHalf = len * 0.32;
+  ctx.lineCap = "butt";
+
+  ctx.strokeStyle = "rgba(240, 251, 255, 0.9)";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-len / 2, -capHalf);
+  ctx.lineTo(-len / 2, capHalf);
+  ctx.stroke();
+
   ctx.strokeStyle = "#0e1014";
+  ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(-len / 2, -capHalf);
   ctx.lineTo(-len / 2, capHalf);
