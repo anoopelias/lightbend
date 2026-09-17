@@ -1,4 +1,4 @@
-import { COLS, ROWS, DIRS } from "./logic.js";
+import { COLS, ROWS, DIRS } from "./game_state.js";
 
 // ---------- Drawing (pure: reads entities + transient view, writes to canvas) ----------
 

@@ -1,4 +1,4 @@
-import { COLS, ROWS } from "./logic.js";
+import { COLS, ROWS } from "./game_state.js";
 
 const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not a click
 
@@ -26,7 +26,7 @@ function clampCell(col, row) {
 // rotate and drag-to-move on the grid, plus dragging a fresh one in from the
 // palette. `views` is an array parallel to state.mirrors holding each
 // mirror's transient (render-only) state -- reassign it (then call
-// syncPalette()) after loading a new level. Mutates state (via logic.js) and
+// syncPalette()) after loading a new level. Mutates state (via game_state.js) and
 // views in place; render.js owns drawing them, this owns nothing but input.
 export class DragController {
   constructor({ board, state, views }) {

@@ -1,4 +1,4 @@
-import { COLS, ROWS, GameState } from "./logic.js";
+import { COLS, ROWS, GameState } from "./game_state.js";
 import { Board } from "./board.js";
 import { drawCells, drawSnapTarget, drawSource, drawMirror, drawTarget, drawBeam } from "./draw.js";
 import { DragController } from "./input.js";
