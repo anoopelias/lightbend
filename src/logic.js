@@ -35,12 +35,12 @@ export const LEVELS = [
   },
   {
     sources: [
-      { col: 3, row: 6, dir: "right", color: "red" },
-      { col: 12, row: 9, dir: "left", color: "blue" },
+      { col: 3, row: 9, dir: "right", color: "red" },
+      { col: 12, row: 6, dir: "left", color: "blue" },
     ],
     targets: [
-      { col: 7, row: 10, color: "red" },
-      { col: 8, row: 6, color: "blue" },
+      { col: 7, row: 10, color: "blue" },
+      { col: 8, row: 6, color: "red" },
     ],
     mirrorCount: 2,
   },
