@@ -1,6 +1,6 @@
 import { COLS, ROWS, GameState } from "./logic.js";
 import { drawCells, drawSnapTarget, drawSource, drawMirror, drawTarget, drawBeam } from "./draw.js";
-import { initDragAndDrop } from "./input.js";
+import { DragController } from "./input.js";
 
 // ---------- Board geometry (pixel-space) ----------
 const MAX_CELL = 40;
@@ -91,7 +91,7 @@ const view = {
 };
 let wasHit = false;
 
-initDragAndDrop({ canvas, state, view, pixelToCell });
+new DragController({ canvas, state, view, pixelToCell });
 
 // ---------- Animation loop ----------
 function tick(time) {

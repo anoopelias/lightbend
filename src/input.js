@@ -11,40 +11,70 @@ function clampCell(col, row) {
 
 // Wires up all pointer interaction for the mirror: click-to-rotate and
 // drag-to-move on the grid, plus dragging a fresh mirror in from the
-// palette. Mutates `state` (via logic.js) and `view` (render-only state)
-// in place; render.js owns drawing them, this owns nothing but input.
-export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
-  function eventToCanvasPoint(e) {
-    const rect = canvas.getBoundingClientRect();
+// palette. Mutates `state` (via logic.js) and `view` (render-only state) in
+// place; render.js owns drawing them, this owns nothing but input.
+export class DragController {
+  constructor({ canvas, state, view, pixelToCell }) {
+    this.canvas = canvas;
+    this.state = state;
+    this.view = view;
+    this.pixelToCell = pixelToCell;
+    this.paletteMirrorSlot = document.getElementById("palette-mirror");
+
+    this.pointerDownCell = null;
+    this.pointerDownClient = null;
+
+    canvas.addEventListener("pointerdown", this.onGridPointerDown);
+    canvas.addEventListener("pointermove", this.onGridPointerMove);
+    canvas.addEventListener("pointerup", this.onGridPointerUp);
+    canvas.addEventListener("pointercancel", this.onGridPointerCancel);
+    this.paletteMirrorSlot.addEventListener("pointerdown", this.onPalettePointerDown);
+
+    this.updatePaletteVisibility();
+  }
+
+  eventToCanvasPoint(e) {
+    const rect = this.canvas.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  function isOverCanvas(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
+  isOverCanvas(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect();
     return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
   }
 
+  updatePaletteVisibility() {
+    this.paletteMirrorSlot.classList.toggle("palette-slot--empty", this.state.mirror.placed);
+  }
+
+  resetGridDrag() {
+    this.pointerDownCell = null;
+    this.view.dragging = false;
+    this.view.dragPos = null;
+    this.view.dragSnapCell = null;
+    this.canvas.style.cursor = "default";
+  }
+
   // ---------- Dragging/rotating an already-placed mirror on the grid ----------
-  let pointerDownCell = null;
-  let pointerDownClient = null;
 
-  canvas.addEventListener("pointerdown", (e) => {
-    const p = eventToCanvasPoint(e);
-    const { col, row } = pixelToCell(p.x, p.y);
-    if (!state.mirror.isAt(col, row)) return;
+  onGridPointerDown = (e) => {
+    const p = this.eventToCanvasPoint(e);
+    const { col, row } = this.pixelToCell(p.x, p.y);
+    if (!this.state.mirror.isAt(col, row)) return;
 
-    pointerDownCell = { col, row };
-    pointerDownClient = { x: e.clientX, y: e.clientY };
-    canvas.setPointerCapture(e.pointerId);
-  });
+    this.pointerDownCell = { col, row };
+    this.pointerDownClient = { x: e.clientX, y: e.clientY };
+    this.canvas.setPointerCapture(e.pointerId);
+  };
 
-  canvas.addEventListener("pointermove", (e) => {
-    const p = eventToCanvasPoint(e);
-    const { col, row } = pixelToCell(p.x, p.y);
+  onGridPointerMove = (e) => {
+    const view = this.view;
+    const p = this.eventToCanvasPoint(e);
+    const { col, row } = this.pixelToCell(p.x, p.y);
 
-    if (pointerDownCell && !view.dragging) {
-      const dx = e.clientX - pointerDownClient.x;
-      const dy = e.clientY - pointerDownClient.y;
+    if (this.pointerDownCell && !view.dragging) {
+      const dx = e.clientX - this.pointerDownClient.x;
+      const dy = e.clientY - this.pointerDownClient.y;
       if (Math.hypot(dx, dy) > DRAG_THRESHOLD) {
         view.dragging = true;
       }
@@ -53,56 +83,42 @@ export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
     if (view.dragging) {
       view.dragPos = p;
       view.dragSnapCell = clampCell(col, row);
-      canvas.style.cursor = "grabbing";
+      this.canvas.style.cursor = "grabbing";
       return;
     }
 
-    view.hoveringMirror = state.mirror.isAt(col, row);
-    canvas.style.cursor = view.hoveringMirror ? "grab" : "default";
-  });
+    view.hoveringMirror = this.state.mirror.isAt(col, row);
+    this.canvas.style.cursor = view.hoveringMirror ? "grab" : "default";
+  };
 
-  canvas.addEventListener("pointerup", (e) => {
+  onGridPointerUp = (e) => {
     // Only handle drags this canvas itself started (pointerdown on the placed
     // mirror) -- a palette-to-grid placement drag ending over the canvas
     // would otherwise also bubble into this same listener and race the
     // palette's own.
-    if (!pointerDownCell) return;
+    if (!this.pointerDownCell) return;
 
-    if (view.dragging) {
-      state.moveMirror(view.dragSnapCell.col, view.dragSnapCell.row);
+    if (this.view.dragging) {
+      this.state.moveMirror(this.view.dragSnapCell.col, this.view.dragSnapCell.row);
     } else {
-      const p = eventToCanvasPoint(e);
-      const { col, row } = pixelToCell(p.x, p.y);
-      if (state.mirror.isAt(col, row)) {
-        state.mirror.rotate();
+      const p = this.eventToCanvasPoint(e);
+      const { col, row } = this.pixelToCell(p.x, p.y);
+      if (this.state.mirror.isAt(col, row)) {
+        this.state.mirror.rotate();
       }
     }
 
-    pointerDownCell = null;
-    view.dragging = false;
-    view.dragPos = null;
-    view.dragSnapCell = null;
-    canvas.style.cursor = "default";
-  });
+    this.resetGridDrag();
+  };
 
-  canvas.addEventListener("pointercancel", () => {
-    pointerDownCell = null;
-    view.dragging = false;
-    view.dragPos = null;
-    view.dragSnapCell = null;
-    canvas.style.cursor = "default";
-  });
+  onGridPointerCancel = () => {
+    this.resetGridDrag();
+  };
 
   // ---------- Placing the mirror from the palette ----------
-  const paletteMirrorSlot = document.getElementById("palette-mirror");
 
-  function updatePaletteVisibility() {
-    paletteMirrorSlot.classList.toggle("palette-slot--empty", state.mirror.placed);
-  }
-  updatePaletteVisibility();
-
-  paletteMirrorSlot.addEventListener("pointerdown", (e) => {
-    if (state.mirror.placed) return;
+  onPalettePointerDown = (e) => {
+    if (this.state.mirror.placed) return;
     e.preventDefault();
 
     const ghost = document.createElement("div");
@@ -123,35 +139,35 @@ export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
     ghost.style.left = `${e.clientX}px`;
     ghost.style.top = `${e.clientY}px`;
 
-    view.dragging = true;
+    this.view.dragging = true;
 
-    function onMove(e) {
+    const onMove = (e) => {
       ghost.style.left = `${e.clientX}px`;
       ghost.style.top = `${e.clientY}px`;
 
-      if (isOverCanvas(e.clientX, e.clientY)) {
-        const p = eventToCanvasPoint(e);
-        const { col, row } = pixelToCell(p.x, p.y);
-        view.dragSnapCell = clampCell(col, row);
+      if (this.isOverCanvas(e.clientX, e.clientY)) {
+        const p = this.eventToCanvasPoint(e);
+        const { col, row } = this.pixelToCell(p.x, p.y);
+        this.view.dragSnapCell = clampCell(col, row);
       } else {
-        view.dragSnapCell = null;
+        this.view.dragSnapCell = null;
       }
-    }
+    };
 
-    function onUp() {
+    const onUp = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       ghost.remove();
 
-      if (view.dragSnapCell && state.moveMirror(view.dragSnapCell.col, view.dragSnapCell.row)) {
-        updatePaletteVisibility();
+      if (this.view.dragSnapCell && this.state.moveMirror(this.view.dragSnapCell.col, this.view.dragSnapCell.row)) {
+        this.updatePaletteVisibility();
       }
 
-      view.dragging = false;
-      view.dragSnapCell = null;
-    }
+      this.view.dragging = false;
+      this.view.dragSnapCell = null;
+    };
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-  });
+  };
 }
