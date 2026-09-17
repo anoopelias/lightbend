@@ -171,6 +171,15 @@ export class DragController {
 
     const view = this.viewFor(mirror);
 
+    // It's "in hand" now (the ghost below shows it) -- empty its slot right
+    // away instead of leaving it sitting in the palette until it's dropped.
+    const slot = e.currentTarget;
+    slot.classList.remove("palette-slot--filled");
+    slot.classList.add("palette-slot--empty");
+    slot.title = "";
+    slot.innerHTML = "";
+    slot.onpointerdown = null;
+
     const ghost = document.createElement("div");
     ghost.className = "drag-ghost";
     ghost.innerHTML = mirrorIconSvg("mirror-gradient-ghost");
@@ -198,9 +207,13 @@ export class DragController {
       window.removeEventListener("pointerup", onUp);
       ghost.remove();
 
-      if (view.dragSnapCell && this.state.moveMirror(mirror, view.dragSnapCell.col, view.dragSnapCell.row)) {
-        this.syncPalette();
+      if (view.dragSnapCell) {
+        this.state.moveMirror(mirror, view.dragSnapCell.col, view.dragSnapCell.row);
       }
+      // Resync regardless: on success this leaves the slot empty (already
+      // cleared above); on a failed or abandoned drop it puts the mirror
+      // back since it's still unplaced.
+      this.syncPalette();
 
       view.dragging = false;
       view.dragSnapCell = null;
