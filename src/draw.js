@@ -117,9 +117,11 @@ function drawMirrorGlyph(ctx, len) {
   ctx.stroke();
 }
 
-// Drawn as a single even, glassy stroke -- unlike the mirror, the splitter
-// is two-sided (a beam behaves the same hitting it from either direction),
-// so there's no front/back shading to distinguish.
+// Drawn as a single even, glassy stroke -- a beam splits or passes through
+// the same way regardless of which side it hits, so there's no front/back
+// shading like the mirror's. It does have one direction along its own
+// length, though (see Splitter.split): the local -x end is its closed end,
+// so it's capped with a short black bar, same as the mirror's black side.
 function drawSplitterGlyph(ctx, len) {
   ctx.lineCap = "round";
   ctx.lineWidth = 2.4;
@@ -136,6 +138,13 @@ function drawSplitterGlyph(ctx, len) {
   ctx.lineTo(len / 2, 0);
   ctx.stroke();
   ctx.shadowBlur = 0;
+
+  const capHalf = len * 0.18;
+  ctx.strokeStyle = "#0e1014";
+  ctx.beginPath();
+  ctx.moveTo(-len / 2, -capHalf);
+  ctx.lineTo(-len / 2, capHalf);
+  ctx.stroke();
 }
 
 // `valid` says whether the dragged mirror can be dropped on view.dragSnapCell.
