@@ -34,19 +34,15 @@ export const LEVELS = [
     mirrorCount: 1,
   },
   {
-    // Replicates the original Chromatron's level 2: a red source/mirror/
-    // target, plus a blue source whose beam passes through one target on
-    // its way to a second.
     sources: [
-      { col: 2, row: 4, dir: "right", color: "red" },
-      { col: 0, row: 5, dir: "right", color: "blue" },
+      { col: 3, row: 6, dir: "right", color: "red" },
+      { col: 12, row: 9, dir: "left", color: "blue" },
     ],
     targets: [
-      { col: 7, row: 2, color: "red" },
-      { col: 6, row: 5, color: "blue" },
-      { col: 11, row: 2, color: "blue" },
+      { col: 7, row: 10, color: "red" },
+      { col: 8, row: 6, color: "blue" },
     ],
-    mirrorCount: 3,
+    mirrorCount: 2,
   },
 ];
 
