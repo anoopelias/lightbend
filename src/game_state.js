@@ -154,17 +154,22 @@ export class Splitter {
     return this.placed && col === this.col && row === this.row;
   }
 
-  // The splitter is a two-sided glass line resting at one of 8 orientations
-  // (45deg apart, step 0-7 -- unlike the mirror, `step` is the line itself,
-  // not a face normal, since both sides behave the same). A beam always
-  // keeps going straight through unaffected. On top of that, a beam that
-  // hits the line at 45deg also spawns a second beam perpendicular to it;
-  // one that hits it straight-on (parallel to the line, or square into its
-  // face) doesn't -- returns that second beam's direction, or undefined.
+  // The splitter is a glass line resting at one of 8 orientations (45deg
+  // apart, step 0-7); unlike the mirror, `step` is the line's own forward
+  // direction rather than a face normal. A beam hitting it obliquely
+  // (45deg to the line) keeps going AND spawns a second beam perpendicular
+  // to it. One hitting square into the line's face (90deg) just passes
+  // through unaffected. One heading dead into the line's closed far end --
+  // i.e. straight along the line, but the opposite way from `step`'s own
+  // direction (180deg) -- is blocked outright. Returns `{ through, branch }`:
+  // `through` is false only for that last case; `branch` is the second
+  // beam's direction, or undefined when the hit doesn't split one off.
   split(dir) {
     const d = DIR_ORDER.indexOf(dir);
-    if ((d - this.step) % 2 === 0) return undefined; // square with the line either way -- no split
-    return DIR_ORDER[(((2 * this.step - d) % 8) + 8) % 8];
+    const diff = (d - this.step + 8) % 8;
+    if (diff === 4) return { through: false, branch: undefined }; // the closed end -- blocked
+    if (diff % 2 === 0) return { through: true, branch: undefined }; // square with the line -- no split
+    return { through: true, branch: DIR_ORDER[(((2 * this.step - d) % 8) + 8) % 8] };
   }
 }
 
@@ -214,11 +219,12 @@ export class GameState {
   }
 
   // Traces one source's beam, following it (and any beams a splitter spawns
-  // off it) until each ray exits the grid or is blocked by a mirror. Targets
-  // never block a beam -- it passes straight through, whether or not their
-  // color matches. A splitter doesn't redirect a beam like a mirror does --
-  // the beam keeps going, and a second one branches off perpendicular to it
-  // (see Splitter.split) -- so one source can produce several ray segments.
+  // off it) until each ray exits the grid or is blocked by a mirror's black
+  // side or a splitter's closed end. Targets never block a beam -- it passes
+  // straight through, whether or not their color matches. A splitter mostly
+  // doesn't redirect a beam like a mirror does -- the beam keeps going, and a
+  // second one branches off perpendicular to it (see Splitter.split) -- so
+  // one source can produce several ray segments.
   // Returns those segments (each a list of grid-space cells, for drawing)
   // and the full set of cells visited across all of them, as "col,row" keys
   // (used to check which colors pass through a given target).
@@ -251,9 +257,10 @@ export class GameState {
         }
         if (tool?.kind === "splitter") {
           segment.push({ col, row });
-          const branchDir = tool.split(dir);
-          if (branchDir) segments.push(trace(col, row, branchDir));
-          continue; // the beam itself always keeps going, same direction
+          const { through, branch } = tool.split(dir);
+          if (branch) segments.push(trace(col, row, branch));
+          if (!through) break; // hit the closed end -- blocked
+          continue;
         }
       }
 
