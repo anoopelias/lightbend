@@ -10,22 +10,30 @@ export const DIRS = {
   down: { x: 0, y: 1 },
 };
 
-// '/' reflection map and '\' reflection map
-const REFLECT = {
-  slash: { right: "up", left: "down", up: "right", down: "left" },
-  backslash: { right: "down", left: "up", up: "left", down: "right" },
-};
+// The mirror is one-sided: it reflects a beam that hits its mirrored face,
+// and blocks (absorbs) a beam that hits its black backing. It has 4 possible
+// orientations, each a 90-degree clockwise turn from the last (step 0-3);
+// axis-aligned angles aren't valid resting states, so a turn always lands on
+// a diagonal. Each entry maps an incoming direction to the outgoing one for
+// the beams that hit the mirrored face -- a direction missing from an entry
+// hits the black side instead and is blocked.
+const ONE_SIDED_REFLECT = [
+  { right: "up", down: "left" }, // "/", mirrored face toward upper-left
+  { left: "up", down: "right" }, // "\", mirrored face toward upper-right
+  { left: "down", up: "right" }, // "/", mirrored face toward lower-right
+  { right: "down", up: "left" }, // "\", mirrored face toward lower-left
+];
 
 export function createState() {
   return {
     source: { col: 0, row: 7, dir: "right", color: "green" },
-    mirror: { col: null, row: null, orientation: "slash", placed: false },
+    mirror: { col: null, row: null, step: 0, placed: false },
     target: { col: 7, row: 14 },
   };
 }
 
 export function rotateMirror(state) {
-  state.mirror.orientation = state.mirror.orientation === "slash" ? "backslash" : "slash";
+  state.mirror.step = (state.mirror.step + 1) % 4;
 }
 
 export function isMirrorCell(state, col, row) {
@@ -71,7 +79,9 @@ export function computeBeam(state) {
 
     if (isMirrorCell(state, col, row)) {
       cells.push({ col, row });
-      dir = REFLECT[state.mirror.orientation][dir];
+      const outDir = ONE_SIDED_REFLECT[state.mirror.step][dir];
+      if (!outDir) break; // hit the black side -- blocked
+      dir = outDir;
       continue;
     }
 
