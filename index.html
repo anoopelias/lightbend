@@ -14,35 +14,37 @@
       <p class="tagline">Bend the light</p>
     </header>
 
-    <div class="palette">
-      <div id="palette-mirror" class="palette-slot palette-slot--filled" title="Mirror">
-        <svg class="tool-icon" viewBox="0 0 24 24">
-          <defs>
-            <linearGradient id="mirror-gradient" x1="4" y1="20" x2="20" y2="4" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#7c8994" />
-              <stop offset="0.5" stop-color="#eef3f6" />
-              <stop offset="1" stop-color="#55606b" />
-            </linearGradient>
-          </defs>
-          <line x1="3.4" y1="19.4" x2="19.4" y2="3.4" stroke="url(#mirror-gradient)" stroke-width="1.8" />
-          <line x1="4.6" y1="20.6" x2="20.6" y2="4.6" stroke="#0e1014" stroke-width="1.8" />
-        </svg>
+    <div class="toolbar">
+      <div class="palette">
+        <div id="palette-mirror" class="palette-slot palette-slot--filled" title="Mirror">
+          <svg class="tool-icon" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id="mirror-gradient" x1="4" y1="20" x2="20" y2="4" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#7c8994" />
+                <stop offset="0.5" stop-color="#eef3f6" />
+                <stop offset="1" stop-color="#55606b" />
+              </linearGradient>
+            </defs>
+            <line x1="3.4" y1="19.4" x2="19.4" y2="3.4" stroke="url(#mirror-gradient)" stroke-width="1.8" />
+            <line x1="4.6" y1="20.6" x2="20.6" y2="4.6" stroke="#0e1014" stroke-width="1.8" />
+          </svg>
+        </div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
+        <div class="palette-slot"></div>
       </div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
-      <div class="palette-slot"></div>
+
+      <button id="next-level" class="next-level-btn" disabled>Next Level &rarr;</button>
     </div>
 
     <div class="board-shell">
       <canvas id="board"></canvas>
     </div>
-
-    <button id="next-level" class="next-level-btn" disabled>Next Level &rarr;</button>
   </div>
 
   <script type="module" src="src/render.js"></script>

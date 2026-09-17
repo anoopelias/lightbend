@@ -38,11 +38,20 @@ body {
 .wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   padding: 24px;
 }
 
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
 .header {
+  align-self: center;
   text-align: center;
   margin-bottom: 28px;
 }
@@ -66,6 +75,7 @@ body {
 }
 
 .board-shell {
+  align-self: center;
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
@@ -82,10 +92,7 @@ body {
 }
 
 .next-level-btn {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
+  flex-shrink: 0;
   padding: 10px 24px;
   border: none;
   border-radius: 10px;
@@ -114,7 +121,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  margin-bottom: 18px;
+  flex-shrink: 0;
   padding: 10px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
@@ -196,8 +203,6 @@ body {
   }
 
   .next-level-btn {
-    top: 8px;
-    right: 8px;
     padding: 6px 12px;
     font-size: 12px;
     border-radius: 8px;
