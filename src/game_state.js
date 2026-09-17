@@ -3,26 +3,32 @@
 export const COLS = 15;
 export const ROWS = 15;
 
+// 8 directions, 45 degrees apart, in clockwise order starting from "right"
+// (matches DIR_ORDER's index so a direction's index * 45deg is its angle).
 export const DIRS = {
   right: { x: 1, y: 0 },
-  left: { x: -1, y: 0 },
-  up: { x: 0, y: -1 },
+  downRight: { x: 1, y: 1 },
   down: { x: 0, y: 1 },
+  downLeft: { x: -1, y: 1 },
+  left: { x: -1, y: 0 },
+  upLeft: { x: -1, y: -1 },
+  up: { x: 0, y: -1 },
+  upRight: { x: 1, y: -1 },
 };
+const DIR_ORDER = Object.keys(DIRS);
 
-// The mirror is one-sided: it reflects a beam that hits its mirrored face,
-// and blocks (absorbs) a beam that hits its black backing. It has 4 possible
-// orientations, each a 90-degree clockwise turn from the last (step 0-3);
-// axis-aligned angles aren't valid resting states, so a turn always lands on
-// a diagonal. Each entry maps an incoming direction to the outgoing one for
-// the beams that hit the mirrored face -- a direction missing from an entry
-// hits the black side instead and is blocked.
-const ONE_SIDED_REFLECT = [
-  { right: "up", down: "left" }, // "/", mirrored face toward upper-left
-  { left: "up", down: "right" }, // "\", mirrored face toward upper-right
-  { left: "down", up: "right" }, // "/", mirrored face toward lower-right
-  { right: "down", up: "left" }, // "\", mirrored face toward lower-left
-];
+// A composite target color is lit by the exact set of primary beam colors
+// it's mixed from -- a beam of any other color (or a missing one) means the
+// target doesn't light.
+const COLOR_MIX = {
+  red: ["red"],
+  green: ["green"],
+  blue: ["blue"],
+  yellow: ["red", "green"],
+  cyan: ["green", "blue"],
+  magenta: ["red", "blue"],
+  white: ["red", "green", "blue"],
+};
 
 // Each level lists its sources and targets (by color) and how many mirrors
 // are available to place -- the mirrors themselves always start unplaced in
@@ -41,6 +47,19 @@ export const LEVELS = [
     targets: [
       { col: 7, row: 10, color: "blue" },
       { col: 8, row: 6, color: "red" },
+    ],
+    mirrorCount: 3,
+  },
+  {
+    sources: [
+      { col: 0, row: 3, dir: "downRight", color: "blue" },
+      { col: 14, row: 11, dir: "left", color: "red" },
+      { col: 3, row: 14, dir: "upRight", color: "green" },
+    ],
+    targets: [
+      { col: 7, row: 4, color: "yellow" },
+      { col: 9, row: 6, color: "cyan" },
+      { col: 7, row: 8, color: "magenta" },
     ],
     mirrorCount: 3,
   },
@@ -70,7 +89,7 @@ export class Mirror {
   placed = false;
 
   rotate() {
-    this.step = (this.step + 1) % 4;
+    this.step = (this.step + 1) % 8;
   }
 
   moveTo(col, row) {
@@ -83,10 +102,21 @@ export class Mirror {
     return this.placed && col === this.col && row === this.row;
   }
 
-  // Outgoing direction for a beam entering from `dir`, or undefined if it
-  // hits the black side and is blocked.
+  // The mirror is a one-sided card resting at one of 8 orientations (45deg
+  // apart, step 0-7): `step` is the direction its reflective face's outward
+  // normal points. A beam entering from `dir` hits that face -- and
+  // reflects -- only if it's heading roughly into it; heading roughly the
+  // same way as the normal instead means it hit the black backing, and is
+  // blocked; heading exactly parallel to the mirror's line means it grazes
+  // past both faces, unaffected. Returns the outgoing direction, or
+  // undefined if blocked.
   reflect(dir) {
-    return ONE_SIDED_REFLECT[this.step][dir];
+    const d = DIR_ORDER.indexOf(dir);
+    const diff = (d - this.step + 8) % 8;
+    if (diff === 2 || diff === 6) return dir; // parallel to the mirror -- passes straight through
+    if (diff !== 3 && diff !== 4 && diff !== 5) return undefined; // hit the black side -- blocked
+    const line = (this.step + 2) % 8; // the mirror's line is perpendicular to its face normal
+    return DIR_ORDER[(((2 * line - d) % 8) + 8) % 8];
   }
 }
 
@@ -168,9 +198,10 @@ export class GameState {
     return { cells, visited };
   }
 
-  // Traces every source's beam. A target lights up only if its own color
-  // passes through its cell and no *other* color also does -- a target
-  // crossed by more than one color is considered contaminated, not hit.
+  // Traces every source's beam. A target lights up only if the exact set of
+  // primary colors passing through its cell matches the set it's mixed from
+  // -- nothing missing, nothing extra. A plain red/green/blue target is
+  // just a one-color mix, so this also covers plain color-purity.
   computeBeams() {
     const beams = this.sources.map((source) => ({ source, ...this.computeBeamFor(source) }));
 
@@ -178,7 +209,8 @@ export class GameState {
     for (const target of this.targets) {
       const key = `${target.col},${target.row}`;
       const colorsPresent = new Set(beams.filter((b) => b.visited.has(key)).map((b) => b.source.color));
-      if (colorsPresent.size === 1 && colorsPresent.has(target.color)) {
+      const wanted = COLOR_MIX[target.color];
+      if (wanted.length === colorsPresent.size && wanted.every((c) => colorsPresent.has(c))) {
         hitTargets.add(target);
       }
     }

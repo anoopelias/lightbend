@@ -15,8 +15,11 @@ const board = new Board({
 
 const nextLevelBtn = document.getElementById("next-level");
 
-// mirror.step 0 renders as "/"; each step is a 90-degree clockwise turn.
-const MIRROR_BASE_ANGLE = -Math.PI / 4;
+// mirror.step 0's reflective face normal points "right" (see reflect() in
+// game_state.js); the glyph itself is drawn as a horizontal line with its
+// reflective side facing local "up", so it needs a quarter turn on top of
+// each step's 45-degree share of the full turn to line the two up.
+const MIRROR_BASE_ANGLE = Math.PI / 2;
 
 function createMirrorView() {
   return {
@@ -59,7 +62,7 @@ function tick(time) {
       view.lastStep = mirror.step;
       // Always turns clockwise, so the target just keeps climbing -- no
       // shortest-path math, and nothing to fall out of sync mid-turn.
-      view.mirrorTargetAngle += Math.PI / 2;
+      view.mirrorTargetAngle += Math.PI / 4;
     }
     view.mirrorAngle += (view.mirrorTargetAngle - view.mirrorAngle) * 0.22;
   });
