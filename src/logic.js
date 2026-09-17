@@ -24,6 +24,13 @@ const ONE_SIDED_REFLECT = [
   { right: "down", up: "left" }, // "\", mirrored face toward lower-left
 ];
 
+// Each level just needs a source and a target -- the mirror always starts
+// unplaced in the palette.
+export const LEVELS = [
+  { source: { col: 3, row: 8, dir: "right", color: "red" }, target: { col: 9, row: 3 } },
+  { source: { col: 2, row: 11, dir: "right", color: "blue" }, target: { col: 11, row: 2 } },
+];
+
 export class Source {
   constructor(col, row, dir, color) {
     this.col = col;
@@ -68,10 +75,24 @@ export class Mirror {
 }
 
 export class GameState {
-  constructor() {
-    this.source = new Source(3, 8, "right", "red");
+  constructor(levelIndex = 0) {
+    this.loadLevel(levelIndex);
+  }
+
+  loadLevel(index) {
+    const level = LEVELS[index];
+    this.levelIndex = index;
+    this.source = new Source(level.source.col, level.source.row, level.source.dir, level.source.color);
+    this.target = new Target(level.target.col, level.target.row);
     this.mirror = new Mirror();
-    this.target = new Target(9, 3);
+  }
+
+  get hasNextLevel() {
+    return this.levelIndex < LEVELS.length - 1;
+  }
+
+  nextLevel() {
+    if (this.hasNextLevel) this.loadLevel(this.levelIndex + 1);
   }
 
   canPlaceMirror(col, row) {

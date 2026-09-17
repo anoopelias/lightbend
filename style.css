@@ -81,6 +81,32 @@ body {
   touch-action: none;
 }
 
+.next-level-btn {
+  margin-top: 18px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  box-shadow: 0 8px 20px -8px rgba(255, 93, 115, 0.5);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.next-level-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.next-level-btn:disabled {
+  opacity: 0.3;
+  filter: grayscale(0.7);
+  box-shadow: none;
+  cursor: default;
+}
+
 .palette {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

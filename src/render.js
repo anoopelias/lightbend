@@ -13,13 +13,15 @@ const board = new Board({
   shellEl: document.querySelector(".board-shell"),
 });
 
+const nextLevelBtn = document.getElementById("next-level");
+
 // mirror.step 0 renders as "/"; each step is a 90-degree clockwise turn.
 const MIRROR_BASE_ANGLE = -Math.PI / 4;
 
 // ---------- Transient visual state (not game state) ----------
 const view = {
-  mirrorAngle: MIRROR_BASE_ANGLE + state.mirror.step * (Math.PI / 2),
-  mirrorTargetAngle: MIRROR_BASE_ANGLE + state.mirror.step * (Math.PI / 2),
+  mirrorAngle: MIRROR_BASE_ANGLE,
+  mirrorTargetAngle: MIRROR_BASE_ANGLE,
   lastStep: state.mirror.step,
   hoveringMirror: false,
   ripple: null, // { start: timestamp }
@@ -29,7 +31,17 @@ const view = {
 };
 let wasHit = false;
 
-new DragController({ board, state, view });
+const dragController = new DragController({ board, state, view });
+
+nextLevelBtn.addEventListener("click", () => {
+  state.nextLevel();
+  view.mirrorAngle = MIRROR_BASE_ANGLE;
+  view.mirrorTargetAngle = MIRROR_BASE_ANGLE;
+  view.lastStep = state.mirror.step;
+  view.ripple = null;
+  wasHit = false;
+  dragController.updatePaletteVisibility();
+});
 
 // ---------- Animation loop ----------
 function tick(time) {
@@ -48,6 +60,9 @@ function tick(time) {
     view.ripple = { start: time };
   }
   wasHit = beam.hit;
+
+  nextLevelBtn.disabled = !(beam.hit && state.hasNextLevel);
+  nextLevelBtn.textContent = beam.hit && !state.hasNextLevel ? "All levels complete" : "Next Level →";
 
   const snapValid =
     view.dragging && view.dragSnapCell
