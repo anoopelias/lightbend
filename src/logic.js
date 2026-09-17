@@ -19,7 +19,7 @@ const REFLECT = {
 export function createState() {
   return {
     source: { col: 0, row: 7, dir: "right", color: "green" },
-    mirror: { col: 7, row: 7, orientation: "slash" },
+    mirror: { col: null, row: null, orientation: "slash", placed: false },
     target: { col: 7, row: 14 },
   };
 }
@@ -29,7 +29,7 @@ export function rotateMirror(state) {
 }
 
 export function isMirrorCell(state, col, row) {
-  return col === state.mirror.col && row === state.mirror.row;
+  return state.mirror.placed && col === state.mirror.col && row === state.mirror.row;
 }
 
 export function canPlaceMirror(state, col, row) {
@@ -39,10 +39,13 @@ export function canPlaceMirror(state, col, row) {
   return true;
 }
 
+// Places the mirror on the grid (from the palette, or repositions it if
+// already placed).
 export function moveMirror(state, col, row) {
   if (!canPlaceMirror(state, col, row)) return false;
   state.mirror.col = col;
   state.mirror.row = row;
+  state.mirror.placed = true;
   return true;
 }
 

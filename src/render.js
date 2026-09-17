@@ -151,9 +151,14 @@ canvas.addEventListener("pointermove", (e) => {
 });
 
 canvas.addEventListener("pointerup", (e) => {
+  // Only handle drags this canvas itself started (pointerdown on the placed
+  // mirror) -- a palette-to-grid placement drag ending over the canvas would
+  // otherwise also bubble into this same listener and race the palette's own.
+  if (!pointerDownCell) return;
+
   if (view.dragging) {
     moveMirror(state, view.dragSnapCell.col, view.dragSnapCell.row);
-  } else if (pointerDownCell) {
+  } else {
     const p = eventToCanvasPoint(e);
     const { col, row } = pixelToCell(p.x, p.y);
     if (isMirrorCell(state, col, row)) {
@@ -174,6 +179,62 @@ canvas.addEventListener("pointercancel", () => {
   view.dragPos = null;
   view.dragSnapCell = null;
   canvas.style.cursor = "default";
+});
+
+// ---------- Placing the mirror from the palette ----------
+const paletteMirrorSlot = document.getElementById("palette-mirror");
+
+function updatePaletteVisibility() {
+  paletteMirrorSlot.classList.toggle("palette-slot--empty", state.mirror.placed);
+}
+updatePaletteVisibility();
+
+function isOverCanvas(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+}
+
+paletteMirrorSlot.addEventListener("pointerdown", (e) => {
+  if (state.mirror.placed) return;
+  e.preventDefault();
+
+  const ghost = document.createElement("div");
+  ghost.className = "drag-ghost";
+  ghost.innerHTML = '<svg class="tool-icon" viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4" /></svg>';
+  document.body.appendChild(ghost);
+  ghost.style.left = `${e.clientX}px`;
+  ghost.style.top = `${e.clientY}px`;
+
+  view.dragging = true;
+
+  function onMove(e) {
+    ghost.style.left = `${e.clientX}px`;
+    ghost.style.top = `${e.clientY}px`;
+
+    if (isOverCanvas(e.clientX, e.clientY)) {
+      const p = eventToCanvasPoint(e);
+      const { col, row } = pixelToCell(p.x, p.y);
+      view.dragSnapCell = clampCell(col, row);
+    } else {
+      view.dragSnapCell = null;
+    }
+  }
+
+  function onUp() {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    ghost.remove();
+
+    if (view.dragSnapCell && moveMirror(state, view.dragSnapCell.col, view.dragSnapCell.row)) {
+      updatePaletteVisibility();
+    }
+
+    view.dragging = false;
+    view.dragSnapCell = null;
+  }
+
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
 });
 
 // ---------- Animation loop ----------
@@ -204,7 +265,7 @@ function tick(time) {
   drawSnapTarget(rc, view, snapValid);
   drawBeam(rc, state, points, time);
   drawSource(rc, state, time);
-  drawMirror(rc, state, view);
+  if (state.mirror.placed) drawMirror(rc, state, view);
   drawTarget(rc, state, view, time, beam.hit);
 
   requestAnimationFrame(tick);

@@ -107,6 +107,17 @@ body {
 
 .palette-slot--filled {
   background: rgba(255, 255, 255, 0.08);
+  cursor: grab;
+  touch-action: none;
+}
+
+.palette-slot--empty {
+  background: var(--cell);
+  cursor: default;
+}
+
+.palette-slot--empty .tool-icon {
+  opacity: 0;
 }
 
 .tool-icon {
@@ -116,6 +127,25 @@ body {
   stroke-width: 3;
   stroke-linecap: round;
   fill: none;
+}
+
+.drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  margin-top: -22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cell-border);
+  border-radius: 6px;
+  transform: scale(1.1);
+  pointer-events: none;
+  z-index: 1000;
 }
 
 @media (max-width: 480px) {
