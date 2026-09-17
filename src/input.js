@@ -13,15 +13,7 @@ function clampCell(col, row) {
 // drag-to-move on the grid, plus dragging a fresh mirror in from the
 // palette. Mutates `state` (via logic.js) and `view` (render-only state)
 // in place; render.js owns drawing them, this owns nothing but input.
-export function initDragAndDrop({ canvas, state, view, PAD, GAP, getCell }) {
-  function pixelToCell(x, y) {
-    const cell = getCell();
-    return {
-      col: Math.floor((x - PAD) / (cell + GAP)),
-      row: Math.floor((y - PAD) / (cell + GAP)),
-    };
-  }
-
+export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
   function eventToCanvasPoint(e) {
     const rect = canvas.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };

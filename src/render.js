@@ -65,6 +65,13 @@ function cellCenter(col, row) {
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
 
+function pixelToCell(x, y) {
+  return {
+    col: Math.floor((x - PAD) / (CELL + GAP)),
+    row: Math.floor((y - PAD) / (CELL + GAP)),
+  };
+}
+
 // Bundles the canvas context and geometry helpers drawing needs.
 const rc = { ctx, cellRect, cellCenter, cell: () => CELL };
 
@@ -84,7 +91,7 @@ const view = {
 };
 let wasHit = false;
 
-initDragAndDrop({ canvas, state, view, PAD, GAP, getCell: () => CELL });
+initDragAndDrop({ canvas, state, view, pixelToCell });
 
 // ---------- Animation loop ----------
 function tick(time) {
