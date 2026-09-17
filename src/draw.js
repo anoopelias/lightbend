@@ -82,25 +82,28 @@ export function drawSource(rc, state, time) {
 }
 
 // Drawn as a thin two-sided card: a reflective metallic face and a black
-// backing, so which side is the mirror face reads at a glance.
-function drawMirrorGlyph(ctx, len) {
+// backing, so which side is the mirror face reads at a glance. "/" and "\"
+// aren't just rotations of each other -- which local side ends up facing an
+// incoming beam flips between them -- so the caller says which local side
+// (+1 or -1) is the reflective one.
+function drawMirrorGlyph(ctx, len, reflectiveSide) {
   ctx.lineCap = "round";
   ctx.lineWidth = 2;
 
-  const grad = ctx.createLinearGradient(-len / 2, -1, len / 2, -1);
+  const grad = ctx.createLinearGradient(-len / 2, -reflectiveSide, len / 2, -reflectiveSide);
   grad.addColorStop(0, "#7c8994");
   grad.addColorStop(0.5, "#eef3f6");
   grad.addColorStop(1, "#55606b");
   ctx.strokeStyle = grad;
   ctx.beginPath();
-  ctx.moveTo(-len / 2, -1);
-  ctx.lineTo(len / 2, -1);
+  ctx.moveTo(-len / 2, reflectiveSide);
+  ctx.lineTo(len / 2, reflectiveSide);
   ctx.stroke();
 
   ctx.strokeStyle = "#0e1014";
   ctx.beginPath();
-  ctx.moveTo(-len / 2, 1);
-  ctx.lineTo(len / 2, 1);
+  ctx.moveTo(-len / 2, -reflectiveSide);
+  ctx.lineTo(len / 2, -reflectiveSide);
   ctx.stroke();
 }
 
@@ -122,6 +125,8 @@ export function drawSnapTarget(rc, view, valid) {
 export function drawMirror(rc, state, view) {
   const { ctx, cellCenter, cell } = rc;
   const len = cell() * 0.62;
+  // "/" and "\" catch an incoming beam on opposite local sides.
+  const reflectiveSide = state.mirror.orientation === "slash" ? -1 : 1;
 
   if (view.dragging) {
     // faint ghost marking the mirror's position until it's dropped
@@ -130,7 +135,7 @@ export function drawMirror(rc, state, view) {
     ctx.globalAlpha = 0.25;
     ctx.translate(orig.x, orig.y);
     ctx.rotate(view.mirrorAngle);
-    drawMirrorGlyph(ctx, len);
+    drawMirrorGlyph(ctx, len, reflectiveSide);
     ctx.restore();
   } else if (view.hoveringMirror) {
     const c = cellCenter(state.mirror.col, state.mirror.row);
@@ -149,7 +154,7 @@ export function drawMirror(rc, state, view) {
   ctx.translate(c.x, c.y);
   ctx.rotate(view.mirrorAngle);
   if (view.dragging) ctx.scale(1.15, 1.15);
-  drawMirrorGlyph(ctx, len);
+  drawMirrorGlyph(ctx, len, reflectiveSide);
   ctx.restore();
 }
 
