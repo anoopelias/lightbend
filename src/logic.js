@@ -90,8 +90,9 @@ export class GameState {
   }
 
   // Traces the beam from the source through the mirror until it exits the
-  // grid, lands on the target, or is blocked. Returns grid-space cells
-  // (col/row, not pixels) and whether the target was hit.
+  // grid or is blocked -- the target doesn't stop it, just marks it as hit.
+  // Returns grid-space cells (col/row, not pixels) and whether the target
+  // was hit.
   computeBeam() {
     const cells = [{ col: this.source.col, row: this.source.row }];
     let col = this.source.col;
@@ -120,7 +121,7 @@ export class GameState {
       if (col === this.target.col && row === this.target.row) {
         cells.push({ col, row });
         hit = true;
-        break;
+        continue; // the target doesn't block the beam -- it keeps going
       }
     }
 
