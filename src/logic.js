@@ -69,9 +69,9 @@ export class Mirror {
 
 export class GameState {
   constructor() {
-    this.source = new Source(0, 7, "right", "green");
+    this.source = new Source(3, 8, "right", "red");
     this.mirror = new Mirror();
-    this.target = new Target(7, 14);
+    this.target = new Target(9, 3);
   }
 
   canPlaceMirror(col, row) {
