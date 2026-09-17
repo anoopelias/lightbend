@@ -200,7 +200,17 @@ paletteMirrorSlot.addEventListener("pointerdown", (e) => {
 
   const ghost = document.createElement("div");
   ghost.className = "drag-ghost";
-  ghost.innerHTML = '<svg class="tool-icon" viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4" /></svg>';
+  ghost.innerHTML = `
+    <svg class="tool-icon" viewBox="0 0 24 24">
+      <defs>
+        <linearGradient id="mirror-gradient-ghost" x1="4" y1="20" x2="20" y2="4" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#7c8994" />
+          <stop offset="0.5" stop-color="#eef3f6" />
+          <stop offset="1" stop-color="#55606b" />
+        </linearGradient>
+      </defs>
+      <line x1="4" y1="20" x2="20" y2="4" stroke="url(#mirror-gradient-ghost)" />
+    </svg>`;
   document.body.appendChild(ghost);
   ghost.style.left = `${e.clientX}px`;
   ghost.style.top = `${e.clientY}px`;

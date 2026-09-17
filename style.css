@@ -9,8 +9,6 @@
   --cell-border: rgba(255, 255, 255, 0.09);
   --accent-1: #ff9f1c;
   --accent-2: #ff5d73;
-  --mirror: #cfd6dc;
-  --mirror-dark: #6c7580;
   --target-off: #5c6470;
   --target-on: #6fcf97;
 }
@@ -123,7 +121,6 @@ body {
 .tool-icon {
   width: 22px;
   height: 22px;
-  stroke: var(--mirror);
   stroke-width: 3;
   stroke-linecap: round;
   fill: none;
