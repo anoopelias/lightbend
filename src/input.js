@@ -14,20 +14,20 @@ function clampCell(col, row) {
 // palette. Mutates `state` (via logic.js) and `view` (render-only state) in
 // place; render.js owns drawing them, this owns nothing but input.
 export class DragController {
-  constructor({ canvas, state, view, pixelToCell }) {
-    this.canvas = canvas;
+  constructor({ board, state, view }) {
+    this.canvas = board.canvas;
+    this.pixelToCell = board.pixelToCell;
     this.state = state;
     this.view = view;
-    this.pixelToCell = pixelToCell;
     this.paletteMirrorSlot = document.getElementById("palette-mirror");
 
     this.pointerDownCell = null;
     this.pointerDownClient = null;
 
-    canvas.addEventListener("pointerdown", this.onGridPointerDown);
-    canvas.addEventListener("pointermove", this.onGridPointerMove);
-    canvas.addEventListener("pointerup", this.onGridPointerUp);
-    canvas.addEventListener("pointercancel", this.onGridPointerCancel);
+    this.canvas.addEventListener("pointerdown", this.onGridPointerDown);
+    this.canvas.addEventListener("pointermove", this.onGridPointerMove);
+    this.canvas.addEventListener("pointerup", this.onGridPointerUp);
+    this.canvas.addEventListener("pointercancel", this.onGridPointerCancel);
     this.paletteMirrorSlot.addEventListener("pointerdown", this.onPalettePointerDown);
 
     this.updatePaletteVisibility();

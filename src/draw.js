@@ -23,8 +23,8 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export function drawCells(rc) {
-  const { ctx, cellRect } = rc;
+export function drawCells(board) {
+  const { ctx, cellRect } = board;
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
       const r = cellRect(col, row);
@@ -38,8 +38,8 @@ export function drawCells(rc) {
   }
 }
 
-export function drawSource(rc, state, time) {
-  const { ctx, cellCenter } = rc;
+export function drawSource(board, state, time) {
+  const { ctx, cellCenter } = board;
   const c = cellCenter(state.source.col, state.source.row);
   const pulse = 1 + 0.06 * Math.sin(time / 260);
   const radius = 9 * pulse;
@@ -109,9 +109,9 @@ function drawMirrorGlyph(ctx, len) {
 }
 
 // `valid` says whether the dragged mirror can be dropped on view.dragSnapCell.
-export function drawSnapTarget(rc, view, valid) {
+export function drawSnapTarget(board, view, valid) {
   if (!view.dragging || !view.dragSnapCell) return;
-  const { ctx, cellRect } = rc;
+  const { ctx, cellRect } = board;
   const r = cellRect(view.dragSnapCell.col, view.dragSnapCell.row);
 
   ctx.save();
@@ -123,9 +123,9 @@ export function drawSnapTarget(rc, view, valid) {
   ctx.restore();
 }
 
-export function drawMirror(rc, state, view) {
-  const { ctx, cellCenter, cell } = rc;
-  const len = cell() * 0.62;
+export function drawMirror(board, state, view) {
+  const { ctx, cellCenter, cellSize } = board;
+  const len = cellSize * 0.62;
 
   if (view.dragging) {
     // faint ghost marking the mirror's position until it's dropped
@@ -138,12 +138,12 @@ export function drawMirror(rc, state, view) {
     ctx.restore();
   } else if (view.hoveringMirror) {
     const c = cellCenter(state.mirror.col, state.mirror.row);
-    const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, cell() * 0.5);
+    const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, cellSize * 0.5);
     glow.addColorStop(0, "rgba(255, 255, 255, 0.14)");
     glow.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(c.x, c.y, cell() * 0.5, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, cellSize * 0.5, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -158,8 +158,8 @@ export function drawMirror(rc, state, view) {
 }
 
 // Mutates view.ripple (clears it once the hit-pulse animation finishes).
-export function drawTarget(rc, state, view, time, hit) {
-  const { ctx, cellCenter } = rc;
+export function drawTarget(board, state, view, time, hit) {
+  const { ctx, cellCenter } = board;
   const c = cellCenter(state.target.col, state.target.row);
   const baseRadius = 8;
   const color = LIGHT[state.source.color];
@@ -207,8 +207,8 @@ export function drawTarget(rc, state, view, time, hit) {
   }
 }
 
-export function drawBeam(rc, state, points, time) {
-  const { ctx } = rc;
+export function drawBeam(board, state, points, time) {
+  const { ctx } = board;
   const flicker = 0.85 + 0.15 * Math.sin(time / 90);
   const color = LIGHT[state.source.color];
 
