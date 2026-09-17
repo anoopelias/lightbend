@@ -29,8 +29,8 @@ const ONE_SIDED_REFLECT = [
 // the palette.
 export const LEVELS = [
   {
-    sources: [{ col: 3, row: 8, dir: "right", color: "red" }],
-    targets: [{ col: 9, row: 3, color: "red" }],
+    sources: [{ col: 2, row: 7, dir: "right", color: "red" }],
+    targets: [{ col: 8, row: 2, color: "red" }],
     mirrorCount: 1,
   },
   {
