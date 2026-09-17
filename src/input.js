@@ -15,21 +15,21 @@ const mirrorIconSvg = (gradId) => `
     <line x1="4.6" y1="20.6" x2="20.6" y2="4.6" stroke="#0e1014" stroke-width="1.8" />
   </svg>`;
 
-// The glassy stroke stands for the splitter's line; the black cap at one
-// end stands for its closed end (see Splitter.split) -- the same black-cap
-// treatment the grid glyph uses, so the palette icon reads the same way
-// before it's even placed.
+// The glassy stroke stands for the splitter's line; the black caps at both
+// ends match the grid glyph's capped-rod look, so the palette icon reads
+// the same way before it's even placed.
 const splitterIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="12" y1="7" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${gradId}" x1="12" y1="7" x2="12" y2="17" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#bfe9ff" />
         <stop offset="0.5" stop-color="#f0fbff" />
         <stop offset="1" stop-color="#7fc4e8" />
       </linearGradient>
     </defs>
-    <line x1="12" y1="7" x2="12" y2="21.5" stroke="url(#${gradId})" stroke-width="2.2" />
+    <line x1="12" y1="7" x2="12" y2="17" stroke="url(#${gradId})" stroke-width="2.2" />
     <line x1="12" y1="2.5" x2="12" y2="6" stroke="#0e1014" stroke-width="2.6" />
+    <line x1="12" y1="18" x2="12" y2="21.5" stroke="#0e1014" stroke-width="2.6" />
   </svg>`;
 
 const toolIconSvg = (tool, gradId) => (tool.kind === "splitter" ? splitterIconSvg(gradId) : mirrorIconSvg(gradId));

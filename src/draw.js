@@ -119,9 +119,8 @@ function drawMirrorGlyph(ctx, len) {
 
 // Drawn as a single even, glassy stroke -- a beam splits or passes through
 // the same way regardless of which side it hits, so there's no front/back
-// shading like the mirror's. It does have one direction along its own
-// length, though (see Splitter.split): the local -x end is its closed end,
-// so it's capped with a short black bar, same as the mirror's black side.
+// shading like the mirror's. Both ends get a black bar cap, like a capped
+// glass rod.
 function drawSplitterGlyph(ctx, len) {
   ctx.lineCap = "round";
   ctx.lineWidth = 2.4;
@@ -142,19 +141,21 @@ function drawSplitterGlyph(ctx, len) {
   const capHalf = len * 0.32;
   ctx.lineCap = "butt";
 
-  ctx.strokeStyle = "rgba(240, 251, 255, 0.9)";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(-len / 2, -capHalf);
-  ctx.lineTo(-len / 2, capHalf);
-  ctx.stroke();
+  for (const x of [-len / 2, len / 2]) {
+    ctx.strokeStyle = "rgba(240, 251, 255, 0.9)";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(x, -capHalf);
+    ctx.lineTo(x, capHalf);
+    ctx.stroke();
 
-  ctx.strokeStyle = "#0e1014";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(-len / 2, -capHalf);
-  ctx.lineTo(-len / 2, capHalf);
-  ctx.stroke();
+    ctx.strokeStyle = "#0e1014";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x, -capHalf);
+    ctx.lineTo(x, capHalf);
+    ctx.stroke();
+  }
 }
 
 // `valid` says whether the dragged mirror can be dropped on view.dragSnapCell.
