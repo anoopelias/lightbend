@@ -1,6 +1,6 @@
 import { COLS, ROWS, DIRS } from "./logic.js";
 
-// ---------- Drawing (pure: reads state + transient view, writes to canvas) ----------
+// ---------- Drawing (pure: reads entities + transient view, writes to canvas) ----------
 
 // RGB light colors and their combinations
 const LIGHT = {
@@ -41,12 +41,12 @@ export function drawCells(board) {
 // Drawn as an emitter tube pointing the direction it fires, rather than a
 // plain dot -- the shape itself reads as "source", clearly distinct from
 // the target's ring, and needs no separate direction indicator.
-export function drawSource(board, state, time) {
+export function drawSource(board, source, time) {
   const { ctx, cellCenter } = board;
-  const c = cellCenter(state.source.col, state.source.row);
+  const c = cellCenter(source.col, source.row);
   const pulse = 1 + 0.08 * Math.sin(time / 260);
-  const color = LIGHT[state.source.color];
-  const dir = DIRS[state.source.dir];
+  const color = LIGHT[source.color];
+  const dir = DIRS[source.dir];
   const angle = Math.atan2(dir.y, dir.x);
 
   const bodyLen = 20;
@@ -132,13 +132,13 @@ export function drawSnapTarget(board, view, valid) {
   ctx.restore();
 }
 
-export function drawMirror(board, state, view) {
+export function drawMirror(board, mirror, view) {
   const { ctx, cellCenter, cellSize } = board;
   const len = cellSize * 0.62;
 
   if (view.dragging) {
     // faint ghost marking the mirror's position until it's dropped
-    const orig = cellCenter(state.mirror.col, state.mirror.row);
+    const orig = cellCenter(mirror.col, mirror.row);
     ctx.save();
     ctx.globalAlpha = 0.25;
     ctx.translate(orig.x, orig.y);
@@ -146,7 +146,7 @@ export function drawMirror(board, state, view) {
     drawMirrorGlyph(ctx, len);
     ctx.restore();
   } else if (view.hoveringMirror) {
-    const c = cellCenter(state.mirror.col, state.mirror.row);
+    const c = cellCenter(mirror.col, mirror.row);
     const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, cellSize * 0.5);
     glow.addColorStop(0, "rgba(255, 255, 255, 0.14)");
     glow.addColorStop(1, "rgba(255, 255, 255, 0)");
@@ -156,7 +156,7 @@ export function drawMirror(board, state, view) {
     ctx.fill();
   }
 
-  const c = view.dragging ? view.dragPos : cellCenter(state.mirror.col, state.mirror.row);
+  const c = view.dragging ? view.dragPos : cellCenter(mirror.col, mirror.row);
 
   ctx.save();
   ctx.translate(c.x, c.y);
@@ -167,11 +167,11 @@ export function drawMirror(board, state, view) {
 }
 
 // Mutates view.ripple (clears it once the hit-pulse animation finishes).
-export function drawTarget(board, state, view, time, hit) {
+export function drawTarget(board, target, view, time, hit) {
   const { ctx, cellCenter } = board;
-  const c = cellCenter(state.target.col, state.target.row);
+  const c = cellCenter(target.col, target.row);
   const baseRadius = 8;
-  const color = LIGHT[state.source.color];
+  const color = LIGHT[target.color];
 
   if (hit) {
     const pulse = 1 + 0.12 * Math.sin(time / 200);
@@ -216,24 +216,24 @@ export function drawTarget(board, state, view, time, hit) {
   }
 }
 
-export function drawBeam(board, state, points, time) {
+export function drawBeam(board, points, color, time) {
   const { ctx } = board;
   const flicker = 0.85 + 0.15 * Math.sin(time / 90);
-  const color = LIGHT[state.source.color];
+  const light = LIGHT[color];
 
   ctx.save();
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
 
   // outer glow
-  ctx.strokeStyle = `rgba(${color.glow}, ${0.35 * flicker})`;
+  ctx.strokeStyle = `rgba(${light.glow}, ${0.35 * flicker})`;
   ctx.lineWidth = 6;
   ctx.beginPath();
   points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
   ctx.stroke();
 
   // core beam
-  ctx.strokeStyle = `rgba(${color.glow}, ${0.95 * flicker})`;
+  ctx.strokeStyle = `rgba(${light.glow}, ${0.95 * flicker})`;
   ctx.lineWidth = 2;
   ctx.beginPath();
   points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));

@@ -24,11 +24,30 @@ const ONE_SIDED_REFLECT = [
   { right: "down", up: "left" }, // "\", mirrored face toward lower-left
 ];
 
-// Each level just needs a source and a target -- the mirror always starts
-// unplaced in the palette.
+// Each level lists its sources and targets (by color) and how many mirrors
+// are available to place -- the mirrors themselves always start unplaced in
+// the palette.
 export const LEVELS = [
-  { source: { col: 3, row: 8, dir: "right", color: "red" }, target: { col: 9, row: 3 } },
-  { source: { col: 2, row: 11, dir: "right", color: "blue" }, target: { col: 11, row: 2 } },
+  {
+    sources: [{ col: 3, row: 8, dir: "right", color: "red" }],
+    targets: [{ col: 9, row: 3, color: "red" }],
+    mirrorCount: 1,
+  },
+  {
+    // Replicates the original Chromatron's level 2: a red source/mirror/
+    // target, plus a blue source whose beam passes through one target on
+    // its way to a second.
+    sources: [
+      { col: 2, row: 4, dir: "right", color: "red" },
+      { col: 0, row: 5, dir: "right", color: "blue" },
+    ],
+    targets: [
+      { col: 7, row: 2, color: "red" },
+      { col: 6, row: 5, color: "blue" },
+      { col: 11, row: 2, color: "blue" },
+    ],
+    mirrorCount: 3,
+  },
 ];
 
 export class Source {
@@ -41,9 +60,10 @@ export class Source {
 }
 
 export class Target {
-  constructor(col, row) {
+  constructor(col, row, color) {
     this.col = col;
     this.row = row;
+    this.color = color;
   }
 }
 
@@ -82,9 +102,9 @@ export class GameState {
   loadLevel(index) {
     const level = LEVELS[index];
     this.levelIndex = index;
-    this.source = new Source(level.source.col, level.source.row, level.source.dir, level.source.color);
-    this.target = new Target(level.target.col, level.target.row);
-    this.mirror = new Mirror();
+    this.sources = level.sources.map((s) => new Source(s.col, s.row, s.dir, s.color));
+    this.targets = level.targets.map((t) => new Target(t.col, t.row, t.color));
+    this.mirrors = Array.from({ length: level.mirrorCount }, () => new Mirror());
   }
 
   get hasNextLevel() {
@@ -95,31 +115,37 @@ export class GameState {
     if (this.hasNextLevel) this.loadLevel(this.levelIndex + 1);
   }
 
-  canPlaceMirror(col, row) {
+  mirrorAt(col, row) {
+    return this.mirrors.find((m) => m.isAt(col, row));
+  }
+
+  // `ignoring` lets a mirror being repositioned drop back onto its own cell.
+  canPlaceMirror(col, row, ignoring = null) {
     if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
-    if (col === this.source.col && row === this.source.row) return false;
-    if (col === this.target.col && row === this.target.row) return false;
+    if (this.sources.some((s) => s.col === col && s.row === row)) return false;
+    if (this.targets.some((t) => t.col === col && t.row === row)) return false;
+    if (this.mirrors.some((m) => m !== ignoring && m.isAt(col, row))) return false;
     return true;
   }
 
-  // Places the mirror on the grid (from the palette, or repositions it if
+  // Places `mirror` on the grid (from the palette, or repositions it if
   // already placed).
-  moveMirror(col, row) {
-    if (!this.canPlaceMirror(col, row)) return false;
-    this.mirror.moveTo(col, row);
+  moveMirror(mirror, col, row) {
+    if (!this.canPlaceMirror(col, row, mirror)) return false;
+    mirror.moveTo(col, row);
     return true;
   }
 
-  // Traces the beam from the source through the mirror until it exits the
-  // grid or is blocked -- the target doesn't stop it, just marks it as hit.
-  // Returns grid-space cells (col/row, not pixels) and whether the target
-  // was hit.
-  computeBeam() {
-    const cells = [{ col: this.source.col, row: this.source.row }];
-    let col = this.source.col;
-    let row = this.source.row;
-    let dir = this.source.dir;
-    let hit = false;
+  // Traces one source's beam through the mirrors until it exits the grid or
+  // is blocked. Targets of the source's own color don't stop it, just get
+  // recorded as hit. Returns grid-space cells (col/row, not pixels) and the
+  // list of targets this beam hit.
+  computeBeamFor(source) {
+    const cells = [{ col: source.col, row: source.row }];
+    let col = source.col;
+    let row = source.row;
+    let dir = source.dir;
+    const hitTargets = [];
 
     for (let steps = 0; steps < COLS * ROWS + 2; steps++) {
       const d = DIRS[dir];
@@ -131,21 +157,31 @@ export class GameState {
         break;
       }
 
-      if (this.mirror.isAt(col, row)) {
+      const mirror = this.mirrorAt(col, row);
+      if (mirror) {
         cells.push({ col, row });
-        const outDir = this.mirror.reflect(dir);
+        const outDir = mirror.reflect(dir);
         if (!outDir) break; // hit the black side -- blocked
         dir = outDir;
         continue;
       }
 
-      if (col === this.target.col && row === this.target.row) {
+      const target = this.targets.find((t) => t.col === col && t.row === row && t.color === source.color);
+      if (target) {
         cells.push({ col, row });
-        hit = true;
+        hitTargets.push(target);
         continue; // the target doesn't block the beam -- it keeps going
       }
     }
 
-    return { cells, hit };
+    return { cells, hitTargets };
+  }
+
+  // Traces every source's beam. Returns each beam (paired with its source)
+  // and the set of targets hit across all of them.
+  computeBeams() {
+    const beams = this.sources.map((source) => ({ source, ...this.computeBeamFor(source) }));
+    const hitTargets = new Set(beams.flatMap((b) => b.hitTargets));
+    return { beams, hitTargets };
   }
 }

@@ -18,64 +18,89 @@ const nextLevelBtn = document.getElementById("next-level");
 // mirror.step 0 renders as "/"; each step is a 90-degree clockwise turn.
 const MIRROR_BASE_ANGLE = -Math.PI / 4;
 
-// ---------- Transient visual state (not game state) ----------
-const view = {
-  mirrorAngle: MIRROR_BASE_ANGLE,
-  mirrorTargetAngle: MIRROR_BASE_ANGLE,
-  lastStep: state.mirror.step,
-  hoveringMirror: false,
-  ripple: null, // { start: timestamp }
-  dragging: false,
-  dragPos: null, // pixel position the mirror is being dragged to
-  dragSnapCell: null, // grid cell the drag would snap to on release
-};
-let wasHit = false;
+function createMirrorView() {
+  return {
+    mirrorAngle: MIRROR_BASE_ANGLE,
+    mirrorTargetAngle: MIRROR_BASE_ANGLE,
+    lastStep: 0,
+    hoveringMirror: false,
+    dragging: false,
+    dragPos: null, // pixel position the mirror is being dragged to
+    dragSnapCell: null, // grid cell the drag would snap to on release
+  };
+}
 
-const dragController = new DragController({ board, state, view });
+function createTargetView() {
+  return { ripple: null }; // { start: timestamp }
+}
+
+// ---------- Transient visual state (not game state), parallel to
+// state.mirrors / state.targets ----------
+let mirrorViews = state.mirrors.map(createMirrorView);
+let targetViews = state.targets.map(createTargetView);
+let wasHitTargets = new Set();
+
+const dragController = new DragController({ board, state, views: mirrorViews });
 
 nextLevelBtn.addEventListener("click", () => {
   state.nextLevel();
-  view.mirrorAngle = MIRROR_BASE_ANGLE;
-  view.mirrorTargetAngle = MIRROR_BASE_ANGLE;
-  view.lastStep = state.mirror.step;
-  view.ripple = null;
-  wasHit = false;
-  dragController.updatePaletteVisibility();
+  mirrorViews = state.mirrors.map(createMirrorView);
+  targetViews = state.targets.map(createTargetView);
+  wasHitTargets = new Set();
+  dragController.views = mirrorViews;
+  dragController.syncPalette();
 });
 
 // ---------- Animation loop ----------
 function tick(time) {
-  if (state.mirror.step !== view.lastStep) {
-    view.lastStep = state.mirror.step;
-    // Always turns clockwise, so the target just keeps climbing -- no
-    // shortest-path math, and nothing to fall out of sync mid-turn.
-    view.mirrorTargetAngle += Math.PI / 2;
-  }
-  view.mirrorAngle += (view.mirrorTargetAngle - view.mirrorAngle) * 0.22;
+  state.mirrors.forEach((mirror, i) => {
+    const view = mirrorViews[i];
+    if (mirror.step !== view.lastStep) {
+      view.lastStep = mirror.step;
+      // Always turns clockwise, so the target just keeps climbing -- no
+      // shortest-path math, and nothing to fall out of sync mid-turn.
+      view.mirrorTargetAngle += Math.PI / 2;
+    }
+    view.mirrorAngle += (view.mirrorTargetAngle - view.mirrorAngle) * 0.22;
+  });
 
-  const beam = state.computeBeam();
-  const points = beam.cells.map((c) => board.cellCenter(c.col, c.row));
+  const { beams, hitTargets } = state.computeBeams();
 
-  if (beam.hit && !wasHit) {
-    view.ripple = { start: time };
-  }
-  wasHit = beam.hit;
+  state.targets.forEach((target, i) => {
+    if (hitTargets.has(target) && !wasHitTargets.has(target)) {
+      targetViews[i].ripple = { start: time };
+    }
+  });
+  wasHitTargets = hitTargets;
 
-  nextLevelBtn.disabled = !(beam.hit && state.hasNextLevel);
-  nextLevelBtn.textContent = beam.hit && !state.hasNextLevel ? "All levels complete" : "Next Level →";
+  const solved = state.targets.length > 0 && state.targets.every((t) => hitTargets.has(t));
+  nextLevelBtn.disabled = !(solved && state.hasNextLevel);
+  nextLevelBtn.textContent = solved && !state.hasNextLevel ? "All levels complete" : "Next Level →";
 
+  const draggingView = mirrorViews.find((v) => v.dragging);
   const snapValid =
-    view.dragging && view.dragSnapCell
-      ? state.canPlaceMirror(view.dragSnapCell.col, view.dragSnapCell.row)
+    draggingView && draggingView.dragSnapCell
+      ? state.canPlaceMirror(draggingView.dragSnapCell.col, draggingView.dragSnapCell.row, dragController.activeMirror)
       : false;
 
   board.clear();
   drawCells(board);
-  drawSnapTarget(board, view, snapValid);
-  drawBeam(board, state, points, time);
-  drawSource(board, state, time);
-  if (state.mirror.placed) drawMirror(board, state, view);
-  drawTarget(board, state, view, time, beam.hit);
+  if (draggingView) drawSnapTarget(board, draggingView, snapValid);
+
+  beams.forEach(({ source, cells }) => {
+    const points = cells.map((c) => board.cellCenter(c.col, c.row));
+    drawBeam(board, points, source.color, time);
+  });
+
+  state.sources.forEach((source) => drawSource(board, source, time));
+
+  state.mirrors.forEach((mirror, i) => {
+    if (mirror.placed) drawMirror(board, mirror, mirrorViews[i]);
+  });
+
+  state.targets.forEach((target, i) => {
+    drawTarget(board, target, targetViews[i], time, hitTargets.has(target));
+  });
 
   requestAnimationFrame(tick);
 }
