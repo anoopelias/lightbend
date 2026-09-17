@@ -1,4 +1,4 @@
-import { COLS, ROWS, createState, canPlaceMirror, computeBeam } from "./logic.js";
+import { COLS, ROWS, GameState } from "./logic.js";
 import { drawCells, drawSnapTarget, drawSource, drawMirror, drawTarget, drawBeam } from "./draw.js";
 import { initDragAndDrop } from "./input.js";
 
@@ -9,7 +9,7 @@ const GAP = 6;
 const PAD = 10;
 let CELL = MAX_CELL;
 
-const state = createState();
+const state = new GameState();
 
 // ---------- Canvas setup ----------
 const canvas = document.getElementById("board");
@@ -103,7 +103,7 @@ function tick(time) {
   }
   view.mirrorAngle += (view.mirrorTargetAngle - view.mirrorAngle) * 0.22;
 
-  const beam = computeBeam(state);
+  const beam = state.computeBeam();
   const points = beam.cells.map((c) => cellCenter(c.col, c.row));
 
   if (beam.hit && !wasHit) {
@@ -113,7 +113,7 @@ function tick(time) {
 
   const snapValid =
     view.dragging && view.dragSnapCell
-      ? canPlaceMirror(state, view.dragSnapCell.col, view.dragSnapCell.row)
+      ? state.canPlaceMirror(view.dragSnapCell.col, view.dragSnapCell.row)
       : false;
 
   ctx.clearRect(0, 0, cssWidth, cssHeight);

@@ -24,73 +24,106 @@ const ONE_SIDED_REFLECT = [
   { right: "down", up: "left" }, // "\", mirrored face toward lower-left
 ];
 
-export function createState() {
-  return {
-    source: { col: 0, row: 7, dir: "right", color: "green" },
-    mirror: { col: null, row: null, step: 0, placed: false },
-    target: { col: 7, row: 14 },
-  };
+export class Source {
+  constructor(col, row, dir, color) {
+    this.col = col;
+    this.row = row;
+    this.dir = dir;
+    this.color = color;
+  }
 }
 
-export function rotateMirror(state) {
-  state.mirror.step = (state.mirror.step + 1) % 4;
+export class Target {
+  constructor(col, row) {
+    this.col = col;
+    this.row = row;
+  }
 }
 
-export function isMirrorCell(state, col, row) {
-  return state.mirror.placed && col === state.mirror.col && row === state.mirror.row;
-}
+export class Mirror {
+  col = null;
+  row = null;
+  step = 0;
+  placed = false;
 
-export function canPlaceMirror(state, col, row) {
-  if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
-  if (col === state.source.col && row === state.source.row) return false;
-  if (col === state.target.col && row === state.target.row) return false;
-  return true;
-}
-
-// Places the mirror on the grid (from the palette, or repositions it if
-// already placed).
-export function moveMirror(state, col, row) {
-  if (!canPlaceMirror(state, col, row)) return false;
-  state.mirror.col = col;
-  state.mirror.row = row;
-  state.mirror.placed = true;
-  return true;
-}
-
-// Traces the beam from the source through mirrors until it exits the grid or
-// lands on the target. Returns grid-space cells (col/row, not pixels) and
-// whether the target was hit.
-export function computeBeam(state) {
-  const cells = [{ col: state.source.col, row: state.source.row }];
-  let col = state.source.col;
-  let row = state.source.row;
-  let dir = state.source.dir;
-  let hit = false;
-
-  for (let steps = 0; steps < COLS * ROWS + 2; steps++) {
-    const d = DIRS[dir];
-    col += d.x;
-    row += d.y;
-
-    if (col < 0 || col >= COLS || row < 0 || row >= ROWS) {
-      cells.push({ col, row });
-      break;
-    }
-
-    if (isMirrorCell(state, col, row)) {
-      cells.push({ col, row });
-      const outDir = ONE_SIDED_REFLECT[state.mirror.step][dir];
-      if (!outDir) break; // hit the black side -- blocked
-      dir = outDir;
-      continue;
-    }
-
-    if (col === state.target.col && row === state.target.row) {
-      cells.push({ col, row });
-      hit = true;
-      break;
-    }
+  rotate() {
+    this.step = (this.step + 1) % 4;
   }
 
-  return { cells, hit };
+  moveTo(col, row) {
+    this.col = col;
+    this.row = row;
+    this.placed = true;
+  }
+
+  isAt(col, row) {
+    return this.placed && col === this.col && row === this.row;
+  }
+
+  // Outgoing direction for a beam entering from `dir`, or undefined if it
+  // hits the black side and is blocked.
+  reflect(dir) {
+    return ONE_SIDED_REFLECT[this.step][dir];
+  }
+}
+
+export class GameState {
+  constructor() {
+    this.source = new Source(0, 7, "right", "green");
+    this.mirror = new Mirror();
+    this.target = new Target(7, 14);
+  }
+
+  canPlaceMirror(col, row) {
+    if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
+    if (col === this.source.col && row === this.source.row) return false;
+    if (col === this.target.col && row === this.target.row) return false;
+    return true;
+  }
+
+  // Places the mirror on the grid (from the palette, or repositions it if
+  // already placed).
+  moveMirror(col, row) {
+    if (!this.canPlaceMirror(col, row)) return false;
+    this.mirror.moveTo(col, row);
+    return true;
+  }
+
+  // Traces the beam from the source through the mirror until it exits the
+  // grid, lands on the target, or is blocked. Returns grid-space cells
+  // (col/row, not pixels) and whether the target was hit.
+  computeBeam() {
+    const cells = [{ col: this.source.col, row: this.source.row }];
+    let col = this.source.col;
+    let row = this.source.row;
+    let dir = this.source.dir;
+    let hit = false;
+
+    for (let steps = 0; steps < COLS * ROWS + 2; steps++) {
+      const d = DIRS[dir];
+      col += d.x;
+      row += d.y;
+
+      if (col < 0 || col >= COLS || row < 0 || row >= ROWS) {
+        cells.push({ col, row });
+        break;
+      }
+
+      if (this.mirror.isAt(col, row)) {
+        cells.push({ col, row });
+        const outDir = this.mirror.reflect(dir);
+        if (!outDir) break; // hit the black side -- blocked
+        dir = outDir;
+        continue;
+      }
+
+      if (col === this.target.col && row === this.target.row) {
+        cells.push({ col, row });
+        hit = true;
+        break;
+      }
+    }
+
+    return { cells, hit };
+  }
 }

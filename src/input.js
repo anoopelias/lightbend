@@ -1,4 +1,4 @@
-import { COLS, ROWS, rotateMirror, isMirrorCell, canPlaceMirror, moveMirror } from "./logic.js";
+import { COLS, ROWS } from "./logic.js";
 
 const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not a click
 
@@ -31,7 +31,7 @@ export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
   canvas.addEventListener("pointerdown", (e) => {
     const p = eventToCanvasPoint(e);
     const { col, row } = pixelToCell(p.x, p.y);
-    if (!isMirrorCell(state, col, row)) return;
+    if (!state.mirror.isAt(col, row)) return;
 
     pointerDownCell = { col, row };
     pointerDownClient = { x: e.clientX, y: e.clientY };
@@ -57,7 +57,7 @@ export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
       return;
     }
 
-    view.hoveringMirror = isMirrorCell(state, col, row);
+    view.hoveringMirror = state.mirror.isAt(col, row);
     canvas.style.cursor = view.hoveringMirror ? "grab" : "default";
   });
 
@@ -69,12 +69,12 @@ export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
     if (!pointerDownCell) return;
 
     if (view.dragging) {
-      moveMirror(state, view.dragSnapCell.col, view.dragSnapCell.row);
+      state.moveMirror(view.dragSnapCell.col, view.dragSnapCell.row);
     } else {
       const p = eventToCanvasPoint(e);
       const { col, row } = pixelToCell(p.x, p.y);
-      if (isMirrorCell(state, col, row)) {
-        rotateMirror(state);
+      if (state.mirror.isAt(col, row)) {
+        state.mirror.rotate();
       }
     }
 
@@ -143,7 +143,7 @@ export function initDragAndDrop({ canvas, state, view, pixelToCell }) {
       window.removeEventListener("pointerup", onUp);
       ghost.remove();
 
-      if (view.dragSnapCell && moveMirror(state, view.dragSnapCell.col, view.dragSnapCell.row)) {
+      if (view.dragSnapCell && state.moveMirror(view.dragSnapCell.col, view.dragSnapCell.row)) {
         updatePaletteVisibility();
       }
 
