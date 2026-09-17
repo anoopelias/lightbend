@@ -42,7 +42,7 @@ export const LEVELS = [
       { col: 7, row: 10, color: "blue" },
       { col: 8, row: 6, color: "red" },
     ],
-    mirrorCount: 2,
+    mirrorCount: 3,
   },
 ];
 
@@ -133,15 +133,16 @@ export class GameState {
   }
 
   // Traces one source's beam through the mirrors until it exits the grid or
-  // is blocked. Targets of the source's own color don't stop it, just get
-  // recorded as hit. Returns grid-space cells (col/row, not pixels) and the
-  // list of targets this beam hit.
+  // is blocked. Targets never block it -- it passes straight through,
+  // whether or not their color matches. Returns the grid-space cells
+  // (col/row, not pixels) and the full set of cells visited, as "col,row"
+  // keys (used to check which colors pass through a given target).
   computeBeamFor(source) {
     const cells = [{ col: source.col, row: source.row }];
+    const visited = new Set([`${source.col},${source.row}`]);
     let col = source.col;
     let row = source.row;
     let dir = source.dir;
-    const hitTargets = [];
 
     for (let steps = 0; steps < COLS * ROWS + 2; steps++) {
       const d = DIRS[dir];
@@ -152,6 +153,7 @@ export class GameState {
         cells.push({ col, row });
         break;
       }
+      visited.add(`${col},${row}`);
 
       const mirror = this.mirrorAt(col, row);
       if (mirror) {
@@ -161,23 +163,26 @@ export class GameState {
         dir = outDir;
         continue;
       }
+    }
 
-      const target = this.targets.find((t) => t.col === col && t.row === row && t.color === source.color);
-      if (target) {
-        cells.push({ col, row });
-        hitTargets.push(target);
-        continue; // the target doesn't block the beam -- it keeps going
+    return { cells, visited };
+  }
+
+  // Traces every source's beam. A target lights up only if its own color
+  // passes through its cell and no *other* color also does -- a target
+  // crossed by more than one color is considered contaminated, not hit.
+  computeBeams() {
+    const beams = this.sources.map((source) => ({ source, ...this.computeBeamFor(source) }));
+
+    const hitTargets = new Set();
+    for (const target of this.targets) {
+      const key = `${target.col},${target.row}`;
+      const colorsPresent = new Set(beams.filter((b) => b.visited.has(key)).map((b) => b.source.color));
+      if (colorsPresent.size === 1 && colorsPresent.has(target.color)) {
+        hitTargets.add(target);
       }
     }
 
-    return { cells, hitTargets };
-  }
-
-  // Traces every source's beam. Returns each beam (paired with its source)
-  // and the set of targets hit across all of them.
-  computeBeams() {
-    const beams = this.sources.map((source) => ({ source, ...this.computeBeamFor(source) }));
-    const hitTargets = new Set(beams.flatMap((b) => b.hitTargets));
     return { beams, hitTargets };
   }
 }
