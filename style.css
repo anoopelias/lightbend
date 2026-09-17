@@ -1,0 +1,109 @@
+:root {
+  --bg-1: #14161c;
+  --bg-2: #1b1f27;
+  --ink: #e8e6e1;
+  --ink-soft: #8b8f99;
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --cell: rgba(255, 255, 255, 0.05);
+  --cell-border: rgba(255, 255, 255, 0.09);
+  --accent-1: #ff9f1c;
+  --accent-2: #ff5d73;
+  --mirror: #cfd6dc;
+  --mirror-dark: #6c7580;
+  --target-off: #5c6470;
+  --target-on: #6fcf97;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 25% 15%, rgba(255, 159, 28, 0.09), transparent 55%),
+    radial-gradient(circle at 80% 85%, rgba(255, 93, 115, 0.06), transparent 50%),
+    linear-gradient(160deg, var(--bg-1), var(--bg-2));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.logo {
+  display: inline-block;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  box-shadow: 0 8px 24px -8px rgba(255, 93, 115, 0.5);
+}
+
+.tagline {
+  margin: 14px 0 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.board-shell {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px;
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 30px 60px -25px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+#board {
+  display: block;
+  border-radius: 8px;
+  touch-action: none;
+}
+
+@media (max-width: 480px) {
+  .wrap {
+    padding: 12px;
+  }
+
+  .header {
+    margin-bottom: 18px;
+  }
+
+  .logo {
+    font-size: 28px;
+    padding: 8px 16px;
+  }
+
+  .tagline {
+    font-size: 13px;
+  }
+
+  .board-shell {
+    padding: 8px;
+  }
+}
+
