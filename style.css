@@ -50,8 +50,29 @@ body {
   margin-bottom: 18px;
 }
 
+.level-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.level-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--ink-soft);
+  border-bottom: 1.5px solid var(--ink-soft);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
 .level-select {
-  padding: 7px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 7px 26px 7px 14px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -287,8 +308,14 @@ body {
   }
 
   .level-select {
-    padding: 5px 8px;
+    padding: 5px 20px 5px 10px;
     font-size: 11px;
+  }
+
+  .level-select-wrap::after {
+    right: 9px;
+    width: 5px;
+    height: 5px;
   }
 
   .toolbar {
