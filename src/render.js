@@ -15,15 +15,25 @@ const board = new Board({
 });
 
 const nextLevelBtn = document.getElementById("next-level");
+const prevLevelBtn = document.getElementById("prev-level");
 
 const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });
 
-nextLevelBtn.addEventListener("click", () => {
-  state.nextLevel();
+function afterLevelChange() {
   view.loadLevel(state);
   dragController.views = view.toolViews;
   dragController.syncPalette();
+}
+
+nextLevelBtn.addEventListener("click", () => {
+  state.nextLevel();
+  afterLevelChange();
+});
+
+prevLevelBtn.addEventListener("click", () => {
+  state.prevLevel();
+  afterLevelChange();
 });
 
 // ---------- Animation loop ----------
@@ -36,6 +46,7 @@ function tick(time) {
   const solved = state.targets.length > 0 && state.targets.every((t) => hitTargets.has(t));
   nextLevelBtn.disabled = !(solved && state.hasNextLevel);
   nextLevelBtn.textContent = solved && !state.hasNextLevel ? "All levels complete" : "Next Level →";
+  prevLevelBtn.disabled = !state.hasPrevLevel;
 
   const draggingView = view.draggingToolView;
   const snapValid =

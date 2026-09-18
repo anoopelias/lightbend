@@ -91,7 +91,15 @@ body {
   touch-action: none;
 }
 
-.next-level-btn {
+.level-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.next-level-btn,
+.prev-level-btn {
   flex-shrink: 0;
   padding: 10px 24px;
   border: none;
@@ -99,18 +107,33 @@ body {
   font-size: 15px;
   font-weight: 700;
   font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, background 0.15s;
+}
+
+.next-level-btn {
   color: #fff;
   background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
   box-shadow: 0 8px 20px -8px rgba(255, 93, 115, 0.5);
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.15s;
 }
 
-.next-level-btn:hover:not(:disabled) {
+.prev-level-btn {
+  color: var(--ink);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+}
+
+.prev-level-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.next-level-btn:hover:not(:disabled),
+.prev-level-btn:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 
-.next-level-btn:disabled {
+.next-level-btn:disabled,
+.prev-level-btn:disabled {
   opacity: 0.3;
   filter: grayscale(0.7);
   box-shadow: none;
@@ -202,7 +225,8 @@ body {
     padding: 8px;
   }
 
-  .next-level-btn {
+  .next-level-btn,
+  .prev-level-btn {
     padding: 6px 12px;
     font-size: 12px;
     border-radius: 8px;

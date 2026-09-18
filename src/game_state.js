@@ -1,5 +1,7 @@
 // ---------- Game logic (grid-space, no pixels, no drawing) ----------
 
+import { loadProgress, saveProgress } from "./storage.js";
+
 export const COLS = 15;
 export const ROWS = 15;
 
@@ -174,8 +176,10 @@ export class Splitter {
 }
 
 export class GameState {
-  constructor(levelIndex = 0) {
-    this.loadLevel(levelIndex);
+  constructor() {
+    const saved = loadProgress();
+    this.levelSnapshots = saved?.levelSnapshots ?? {}; // levelIndex -> that level's last tool placements
+    this.loadLevel(saved?.levelIndex ?? 0);
   }
 
   loadLevel(index) {
@@ -187,14 +191,49 @@ export class GameState {
       ...Array.from({ length: level.mirrorCount ?? 0 }, () => new Mirror()),
       ...Array.from({ length: level.splitterCount ?? 0 }, () => new Splitter()),
     ];
+    this.applySnapshot(this.levelSnapshots[index]);
+    this.captureSnapshot();
+  }
+
+  // Restores a level's tools to how the player last left them -- a no-op
+  // for a level that's never been visited.
+  applySnapshot(snapshot) {
+    if (!snapshot) return;
+    snapshot.forEach((s, i) => {
+      const tool = this.tools[i];
+      if (!tool) return;
+      tool.step = s.step;
+      if (s.placed) tool.moveTo(s.col, s.row);
+    });
+  }
+
+  // Records the current level's tool placements and saves progress, so
+  // leaving the level (or reloading the page) and coming back restores it
+  // instead of starting blank.
+  captureSnapshot() {
+    this.levelSnapshots[this.levelIndex] = this.tools.map((t) => ({
+      col: t.col,
+      row: t.row,
+      step: t.step,
+      placed: t.placed,
+    }));
+    saveProgress({ levelIndex: this.levelIndex, levelSnapshots: this.levelSnapshots });
   }
 
   get hasNextLevel() {
     return this.levelIndex < LEVELS.length - 1;
   }
 
+  get hasPrevLevel() {
+    return this.levelIndex > 0;
+  }
+
   nextLevel() {
     if (this.hasNextLevel) this.loadLevel(this.levelIndex + 1);
+  }
+
+  prevLevel() {
+    if (this.hasPrevLevel) this.loadLevel(this.levelIndex - 1);
   }
 
   toolAt(col, row) {
@@ -215,7 +254,13 @@ export class GameState {
   moveTool(tool, col, row) {
     if (!this.canPlaceTool(col, row, tool)) return false;
     tool.moveTo(col, row);
+    this.captureSnapshot();
     return true;
+  }
+
+  rotateTool(tool) {
+    tool.rotate();
+    this.captureSnapshot();
   }
 
   // Traces one source's beam, following it (and any beams a splitter spawns

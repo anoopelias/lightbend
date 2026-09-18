@@ -171,7 +171,7 @@ export class DragController {
       const p = this.eventToCanvasPoint(e);
       const { col, row } = this.pixelToCell(p.x, p.y);
       if (tool.isAt(col, row)) {
-        tool.rotate();
+        this.state.rotateTool(tool);
       }
     }
 
