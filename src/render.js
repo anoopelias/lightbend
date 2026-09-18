@@ -16,14 +16,30 @@ const board = new Board({
 
 const nextLevelBtn = document.getElementById("next-level");
 const prevLevelBtn = document.getElementById("prev-level");
+const levelSelect = document.getElementById("level-select");
 
 const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });
+
+// Rebuilds the dropdown's options -- only levels reached so far are
+// selectable -- and syncs its value to the current level.
+function syncLevelSelect() {
+  levelSelect.innerHTML = "";
+  for (let i = 0; i < state.levelCount; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = `Level ${i + 1}`;
+    option.disabled = i > state.maxLevelReached;
+    levelSelect.appendChild(option);
+  }
+  levelSelect.value = state.levelIndex;
+}
 
 function afterLevelChange() {
   view.loadLevel(state);
   dragController.views = view.toolViews;
   dragController.syncPalette();
+  syncLevelSelect();
 }
 
 nextLevelBtn.addEventListener("click", () => {
@@ -36,6 +52,13 @@ prevLevelBtn.addEventListener("click", () => {
   afterLevelChange();
 });
 
+levelSelect.addEventListener("change", () => {
+  state.goToLevel(Number(levelSelect.value));
+  afterLevelChange();
+});
+
+syncLevelSelect();
+
 // ---------- Animation loop ----------
 function tick(time) {
   view.updateToolAngles(state.tools);
@@ -45,7 +68,7 @@ function tick(time) {
 
   const solved = state.targets.length > 0 && state.targets.every((t) => hitTargets.has(t));
   nextLevelBtn.disabled = !(solved && state.hasNextLevel);
-  nextLevelBtn.textContent = solved && !state.hasNextLevel ? "All levels complete" : "Next Level →";
+  nextLevelBtn.textContent = solved && !state.hasNextLevel ? "All levels complete" : "Next →";
   prevLevelBtn.disabled = !state.hasPrevLevel;
 
   const draggingView = view.draggingToolView;

@@ -179,7 +179,12 @@ export class GameState {
   constructor() {
     const saved = loadProgress();
     this.levelSnapshots = saved?.levelSnapshots ?? {}; // levelIndex -> that level's last tool placements
+    this.maxLevelReached = saved?.maxLevelReached ?? 0;
     this.loadLevel(saved?.levelIndex ?? 0);
+  }
+
+  get levelCount() {
+    return LEVELS.length;
   }
 
   loadLevel(index) {
@@ -217,7 +222,11 @@ export class GameState {
       step: t.step,
       placed: t.placed,
     }));
-    saveProgress({ levelIndex: this.levelIndex, levelSnapshots: this.levelSnapshots });
+    saveProgress({
+      levelIndex: this.levelIndex,
+      levelSnapshots: this.levelSnapshots,
+      maxLevelReached: this.maxLevelReached,
+    });
   }
 
   get hasNextLevel() {
@@ -229,11 +238,19 @@ export class GameState {
   }
 
   nextLevel() {
-    if (this.hasNextLevel) this.loadLevel(this.levelIndex + 1);
+    if (!this.hasNextLevel) return;
+    this.maxLevelReached = Math.max(this.maxLevelReached, this.levelIndex + 1);
+    this.loadLevel(this.levelIndex + 1);
   }
 
   prevLevel() {
     if (this.hasPrevLevel) this.loadLevel(this.levelIndex - 1);
+  }
+
+  // Jumps to any level the player has already reached (via nextLevel) --
+  // used by the level-select dropdown.
+  goToLevel(index) {
+    if (index >= 0 && index <= this.maxLevelReached && index < LEVELS.length) this.loadLevel(index);
   }
 
   toolAt(col, row) {
