@@ -17,6 +17,20 @@ const board = new Board({
 const nextLevelBtn = document.getElementById("next-level");
 const prevLevelBtn = document.getElementById("prev-level");
 const levelSelect = document.getElementById("level-select");
+const paletteEl = document.querySelector(".palette");
+
+// On mobile the palette's fixed slot size left it much narrower than the
+// board below it; match its width there instead (desktop keeps its own
+// compact size). Matches the breakpoint the rest of the mobile layout uses.
+const MOBILE_BREAKPOINT = 480;
+
+function syncPaletteWidth() {
+  paletteEl.style.width = window.innerWidth <= MOBILE_BREAKPOINT ? `${board.cssWidth}px` : "";
+}
+
+syncPaletteWidth();
+window.addEventListener("resize", syncPaletteWidth);
+window.addEventListener("orientationchange", syncPaletteWidth);
 
 const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });

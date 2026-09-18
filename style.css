@@ -318,6 +318,12 @@ body {
     border-radius: 7px;
   }
 
+  .palette-slot {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
   .level-select {
     padding: 5px 20px 5px 10px;
     font-size: 11px;
