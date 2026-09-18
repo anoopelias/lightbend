@@ -142,10 +142,15 @@ body {
 .next-level-btn,
 .prev-level-btn {
   flex-shrink: 0;
-  padding: 7px 14px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -273,8 +278,10 @@ body {
 
   .next-level-btn,
   .prev-level-btn {
-    padding: 5px 10px;
-    font-size: 11px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 13px;
     border-radius: 7px;
   }
 
