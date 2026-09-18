@@ -148,6 +148,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
   border: none;
   border-radius: 8px;
   font-size: 15px;
