@@ -73,6 +73,20 @@ body {
   outline-offset: 2px;
 }
 
+/* The dropdown's own popup renders on the browser's native (light)
+   background in most browsers, ignoring the page's dark theme -- our pale
+   --ink read as washed-out there, fainter than the disabled gray next to
+   it, backwards from what "enabled vs. disabled" should look like. These
+   colors are picked for contrast against that native light popup, not the
+   page's own dark background. */
+.level-select option {
+  color: #1c1e24;
+}
+
+.level-select option:disabled {
+  color: #a7abb5;
+}
+
 .header {
   align-self: center;
   text-align: center;
