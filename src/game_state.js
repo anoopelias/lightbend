@@ -237,9 +237,18 @@ export class GameState {
     return this.levelIndex > 0;
   }
 
+  // Marks `index` as selectable in the level dropdown -- called the moment
+  // a level is solved, not just when the player clicks Next, so the
+  // dropdown unlocks it immediately either way.
+  reachLevel(index) {
+    if (index <= this.maxLevelReached) return;
+    this.maxLevelReached = index;
+    this.captureSnapshot();
+  }
+
   nextLevel() {
     if (!this.hasNextLevel) return;
-    this.maxLevelReached = Math.max(this.maxLevelReached, this.levelIndex + 1);
+    this.reachLevel(this.levelIndex + 1);
     this.loadLevel(this.levelIndex + 1);
   }
 

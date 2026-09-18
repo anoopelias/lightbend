@@ -58,6 +58,7 @@ levelSelect.addEventListener("change", () => {
 });
 
 syncLevelSelect();
+let wasSolved = false;
 
 // ---------- Animation loop ----------
 function tick(time) {
@@ -67,6 +68,12 @@ function tick(time) {
   view.updateRipples(state.targets, hitTargets, time);
 
   const solved = state.targets.length > 0 && state.targets.every((t) => hitTargets.has(t));
+  if (solved && !wasSolved && state.hasNextLevel) {
+    state.reachLevel(state.levelIndex + 1);
+    syncLevelSelect();
+  }
+  wasSolved = solved;
+
   nextLevelBtn.disabled = !(solved && state.hasNextLevel);
   nextLevelBtn.textContent = solved && !state.hasNextLevel ? "All levels complete" : "→";
   prevLevelBtn.disabled = !state.hasPrevLevel;
