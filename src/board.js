@@ -4,7 +4,7 @@
 // comfortable desktop size.
 const MAX_CELL = 40;
 const MIN_CELL = 10;
-const GAP = 6;
+const GAP = 0;
 const PAD = 10;
 
 export class Board {
