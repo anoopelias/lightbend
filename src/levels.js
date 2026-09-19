@@ -82,7 +82,7 @@ export const LEVELS = [
       { col: 7, row: 3, color: "blue" },
       { col: 11, row: 4, color: "red" },
       { col: 4, row: 5, color: "blue" },
-      { col: 5, row: 9, color: "red" },
+      { col: 5, row: 10, color: "red" },
     ],
     blockers: borderCells(15),
     mirrorCount: 0,
