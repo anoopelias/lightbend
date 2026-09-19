@@ -107,11 +107,9 @@ export const LEVELS = [
       { col: 12, row: 3, color: "green" },
       { col: 12, row: 13, color: "green" },
     ],
-    // Fixed splitters, oriented like a backslash (step 1), filling every row
-    // of columns 1, 4, 10 and 13.
-    fixedTools: [1, 4, 10, 13].flatMap((col) =>
-      columnCells(col, 15).map((c) => ({ kind: "splitter", col: c.col, row: c.row, step: 1 }))
-    ),
+    // One-way conduits, letting light through only top-left to bottom-right,
+    // filling every row of columns 1, 4, 10 and 13.
+    conduits: [1, 4, 10, 13].flatMap((col) => columnCells(col, 15).map((c) => ({ col: c.col, row: c.row, dir: "downRight" }))),
     mirrorCount: 3,
     splitterCount: 2,
     benderCount: 1,
