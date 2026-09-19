@@ -290,12 +290,14 @@ export class GameState {
   }
 
   // Traces one source's beam, following it (and any beams a splitter spawns
-  // off it) until each ray exits the grid or is blocked by a mirror's black
-  // side or a splitter's closed end. Targets never block a beam -- it passes
-  // straight through, whether or not their color matches. A splitter mostly
-  // doesn't redirect a beam like a mirror does -- the beam keeps going, and a
-  // second one branches off perpendicular to it (see Splitter.split) -- so
-  // one source can produce several ray segments.
+  // off it) until each ray exits the grid or is blocked -- by a mirror's
+  // black side, a splitter's closed end, or reaching any source's cell
+  // (its own included, though a beam starting there never re-enters it).
+  // Targets never block a beam -- it passes straight through, whether or
+  // not their color matches. A splitter mostly doesn't redirect a beam
+  // like a mirror does -- the beam keeps going, and a second one branches
+  // off perpendicular to it (see Splitter.split) -- so one source can
+  // produce several ray segments.
   // Returns those segments (each a list of grid-space cells, for drawing)
   // and the full set of cells visited across all of them, as "col,row" keys
   // (used to check which colors pass through a given target).
@@ -317,6 +319,11 @@ export class GameState {
           break;
         }
         visited.add(`${col},${row}`);
+
+        if (this.sources.some((s) => s.col === col && s.row === row)) {
+          segment.push({ col, row });
+          break; // a source's housing blocks any beam reaching it, own or not
+        }
 
         const tool = this.toolAt(col, row);
         if (tool?.kind === "mirror") {
