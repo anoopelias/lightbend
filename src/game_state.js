@@ -60,13 +60,24 @@ export class Blocker {
   }
 }
 
+// A fixed, one-way gate, placed by the level like a blocker -- not a tool,
+// never movable or rotatable. A beam already travelling `dir` passes
+// straight through unaffected; any other beam is blocked, same as hitting
+// a blocker.
+export class Conduit {
+  constructor(col, row, dir = "downRight") {
+    this.col = col;
+    this.row = row;
+    this.dir = dir;
+  }
+}
+
 export class Mirror {
   kind = "mirror";
   col = null;
   row = null;
   step = 0;
   placed = false;
-  fixed = false; // placed by the level itself, immovable -- never draggable or rotatable
 
   rotate() {
     this.step = (this.step + 1) % 8;
@@ -106,7 +117,6 @@ export class Splitter {
   row = null;
   step = 0;
   placed = false;
-  fixed = false; // placed by the level itself, immovable -- never draggable or rotatable
 
   rotate() {
     this.step = (this.step + 1) % 8;
@@ -147,7 +157,6 @@ export class Bender {
   row = null;
   step = 0;
   placed = false;
-  fixed = false; // placed by the level itself, immovable -- never draggable or rotatable
 
   rotate() {
     this.step = (this.step + 1) % 8;
@@ -183,16 +192,6 @@ export class Bender {
   }
 }
 
-// Builds one of a level's own fixed tools -- pre-placed and immovable,
-// unlike the player's draggable inventory.
-function createFixedTool({ kind, col, row, step = 0 }) {
-  const tool = kind === "splitter" ? new Splitter() : kind === "bender" ? new Bender() : new Mirror();
-  tool.step = step;
-  tool.moveTo(col, row);
-  tool.fixed = true;
-  return tool;
-}
-
 export class GameState {
   constructor() {
     const saved = loadProgress();
@@ -211,11 +210,11 @@ export class GameState {
     this.sources = level.sources.map((s) => new Source(s.col, s.row, s.dir, s.color));
     this.targets = level.targets.map((t) => new Target(t.col, t.row, t.color));
     this.blockers = (level.blockers ?? []).map((b) => new Blocker(b.col, b.row));
+    this.conduits = (level.conduits ?? []).map((c) => new Conduit(c.col, c.row, c.dir));
     this.tools = [
       ...Array.from({ length: level.mirrorCount ?? 0 }, () => new Mirror()),
       ...Array.from({ length: level.splitterCount ?? 0 }, () => new Splitter()),
       ...Array.from({ length: level.benderCount ?? 0 }, () => new Bender()),
-      ...(level.fixedTools ?? []).map(createFixedTool),
     ];
     this.applySnapshot(this.levelSnapshots[index]);
     this.captureSnapshot();
@@ -293,6 +292,7 @@ export class GameState {
     if (this.sources.some((s) => s.col === col && s.row === row)) return false;
     if (this.targets.some((t) => t.col === col && t.row === row)) return false;
     if (this.blockers.some((b) => b.col === col && b.row === row)) return false;
+    if (this.conduits.some((c) => c.col === col && c.row === row)) return false;
     if (this.tools.some((t) => t !== ignoring && t.isAt(col, row))) return false;
     return true;
   }
@@ -300,7 +300,6 @@ export class GameState {
   // Places `tool` on the grid (from the palette, or repositions it if
   // already placed).
   moveTool(tool, col, row) {
-    if (tool.fixed) return false;
     if (!this.canPlaceTool(col, row, tool)) return false;
     tool.moveTo(col, row);
     this.captureSnapshot();
@@ -308,16 +307,16 @@ export class GameState {
   }
 
   rotateTool(tool) {
-    if (tool.fixed) return;
     tool.rotate();
     this.captureSnapshot();
   }
 
   // Traces one source's beam, following it (and any beams a splitter spawns
   // off it) until each ray exits the grid or is blocked -- by a mirror's
-  // black side, a bender's, a splitter's closed end, a fixed blocker, or
-  // reaching any source's cell (its own included, though a beam starting
-  // there never re-enters it). Targets never block a beam -- it passes
+  // black side, a bender's, a splitter's closed end, a fixed blocker, a
+  // conduit facing the wrong way, or reaching any source's cell (its own
+  // included, though a beam starting there never re-enters it). Targets
+  // never block a beam -- it passes
   // straight through, whether or not their color matches. A splitter mostly
   // doesn't redirect a beam like a mirror does -- the beam keeps going, and
   // a second one branches off perpendicular to it (see Splitter.split) --
@@ -351,6 +350,11 @@ export class GameState {
         if (this.blockers.some((b) => b.col === col && b.row === row)) {
           segment.push({ col, row });
           break; // a fixed obstacle -- blocked
+        }
+        const conduit = this.conduits.find((c) => c.col === col && c.row === row);
+        if (conduit && conduit.dir !== dir) {
+          segment.push({ col, row });
+          break; // wrong way through the gate -- blocked
         }
 
         const tool = this.toolAt(col, row);

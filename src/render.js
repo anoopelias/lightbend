@@ -1,7 +1,18 @@
 import { COLS, ROWS, GameState } from "./game_state.js";
 import { computeBeamEdges } from "./beam_edges.js";
 import { Board } from "./board.js";
-import { drawCells, drawBlocker, drawSnapTarget, drawSource, drawMirror, drawSplitter, drawBender, drawTarget, drawBeam } from "./draw.js";
+import {
+  drawCells,
+  drawBlocker,
+  drawConduit,
+  drawSnapTarget,
+  drawSource,
+  drawMirror,
+  drawSplitter,
+  drawBender,
+  drawTarget,
+  drawBeam,
+} from "./draw.js";
 import { DragController } from "./input.js";
 import { ViewState } from "./view_state.js";
 import { clearProgress } from "./storage.js";
@@ -117,6 +128,7 @@ function tick(time) {
   board.clear();
   drawCells(board);
   state.blockers.forEach((blocker) => drawBlocker(board, blocker));
+  state.conduits.forEach((conduit) => drawConduit(board, conduit));
   if (draggingView) drawSnapTarget(board, draggingView, snapValid);
 
   computeBeamEdges(beams).forEach(({ from, to, color }) => {

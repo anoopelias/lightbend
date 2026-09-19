@@ -66,6 +66,44 @@ export function drawBlocker(board, blocker) {
   ctx.stroke();
 }
 
+// A fixed one-way gate, drawn as a glassy diagonal channel with an
+// arrowhead at its open end -- the arrow alone tells a player which way
+// it lets light through, no need to watch it fail first.
+export function drawConduit(board, conduit) {
+  const { ctx, cellRect, cellCenter } = board;
+  const r = cellRect(conduit.col, conduit.row);
+  const c = cellCenter(conduit.col, conduit.row);
+  const dir = DIRS[conduit.dir];
+  const mag = Math.hypot(dir.x, dir.y);
+  const ux = dir.x / mag;
+  const uy = dir.y / mag;
+  const half = r.w * 0.32;
+  const x1 = c.x - ux * half;
+  const y1 = c.y - uy * half;
+  const x2 = c.x + ux * half;
+  const y2 = c.y + uy * half;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(127, 196, 232, 0.5)";
+  ctx.lineWidth = r.w * 0.16;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  const angle = Math.atan2(uy, ux);
+  const ah = r.w * 0.15;
+  ctx.fillStyle = "rgba(210, 240, 255, 0.85)";
+  ctx.beginPath();
+  ctx.moveTo(x2 + ux * ah * 0.4, y2 + uy * ah * 0.4);
+  ctx.lineTo(x2 - ah * Math.cos(angle - Math.PI / 6), y2 - ah * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(x2 - ah * Math.cos(angle + Math.PI / 6), y2 - ah * Math.sin(angle + Math.PI / 6));
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
 // Drawn as an emitter tube pointing the direction it fires, rather than a
 // plain dot -- the shape itself reads as "source", clearly distinct from
 // the target's ring, and needs no separate direction indicator.

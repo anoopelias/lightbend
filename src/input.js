@@ -145,7 +145,7 @@ export class DragController {
     const p = this.eventToCanvasPoint(e);
     const { col, row } = this.pixelToCell(p.x, p.y);
     const tool = this.state.toolAt(col, row);
-    if (!tool || tool.fixed) return;
+    if (!tool) return;
 
     this.activeTool = tool;
     this.pointerDownCell = { col, row };
@@ -174,8 +174,7 @@ export class DragController {
       }
     }
 
-    const hoveredTool = this.state.toolAt(col, row);
-    const hovered = hoveredTool && !hoveredTool.fixed ? hoveredTool : null;
+    const hovered = this.state.toolAt(col, row);
     for (const t of this.state.tools) this.viewFor(t).hovering = t === hovered;
     this.canvas.style.cursor = hovered ? "grab" : "default";
   };
