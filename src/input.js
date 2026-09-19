@@ -38,20 +38,20 @@ const splitterIconSvg = (gradId) => `
     <line x1="22" y1="9" x2="22" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
   </svg>`;
 
-// Same glyph as the mirror icon -- a bender's palette icon only needs to be
-// rotated 22.5deg further to match its actual step-0 angle (see
-// BENDER_BASE_ANGLE in view_state.js), same as the mirror icon comment above.
+// Same reasoning as the mirror icon above -- matches step 0's actual grid
+// orientation (see BENDER_BASE_ANGLE in view_state.js), plus the classic
+// handle kicked out behind one end that tells it apart from the mirror.
 const benderIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="7.8" y1="22.2" x2="16.2" y2="1.8" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${gradId}" x1="8.7" y1="22.5" x2="17.1" y2="2.2" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#7c8994" />
         <stop offset="0.5" stop-color="#eef3f6" />
         <stop offset="1" stop-color="#55606b" />
       </linearGradient>
     </defs>
-    <line x1="7.8" y1="22.2" x2="16.2" y2="1.8" stroke="url(#${gradId})" stroke-width="1.8" />
-    <line x1="6.9" y1="21.8" x2="15.3" y2="1.5" stroke="#0e1014" stroke-width="1.8" />
+    <polyline points="15.3,1.5 6.9,21.8 1.1,23.1" fill="none" stroke="#0e1014" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    <line x1="8.7" y1="22.5" x2="17.1" y2="2.2" stroke="url(#${gradId})" stroke-width="1.8" />
   </svg>`;
 
 const toolIconSvg = (tool, gradId) =>

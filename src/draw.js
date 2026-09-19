@@ -152,6 +152,36 @@ function drawMirrorGlyph(ctx, len) {
   ctx.stroke();
 }
 
+// Drawn like the mirror's flat reflective face, but backed by a short
+// straight plate with a small handle kicked out behind one end -- the
+// classic look for this piece, and a silhouette that reads as different
+// from the mirror's at a glance no matter the rotation, on top of the
+// 22.5deg the caller already offsets it by.
+function drawBenderGlyph(ctx, len) {
+  ctx.lineCap = "round";
+
+  const half = len / 2;
+  const handle = len * 0.22;
+
+  ctx.strokeStyle = "#0e1014";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-half, 1);
+  ctx.lineTo(half, 1);
+  ctx.lineTo(half + handle * 0.7, 1 + handle);
+  ctx.stroke();
+
+  const grad = ctx.createLinearGradient(-half, -1, half, -1);
+  grad.addColorStop(0, "#7c8994");
+  grad.addColorStop(0.5, "#eef3f6");
+  grad.addColorStop(1, "#55606b");
+  ctx.strokeStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(-half, -1);
+  ctx.lineTo(half, -1);
+  ctx.stroke();
+}
+
 // Drawn as an "I-beam": a thin glassy stem with a thick black flange
 // perpendicular to it at each end -- a beam splits or passes through the
 // same way regardless of which side it hits, so there's no front/back
@@ -247,11 +277,8 @@ export function drawSplitter(board, splitter, view) {
   drawToolBase(board, splitter, view, drawSplitterGlyph);
 }
 
-// Same glyph as the mirror -- it's the caller's rotation angle
-// (BENDER_BASE_ANGLE in view_state.js, offset 22.5deg from the mirror's own)
-// that makes a bender visibly distinct at a glance despite sharing the mirror's shape.
 export function drawBender(board, bender, view) {
-  drawToolBase(board, bender, view, drawMirrorGlyph);
+  drawToolBase(board, bender, view, drawBenderGlyph);
 }
 
 // Mutates view.ripple (clears it once the hit-pulse animation finishes).
