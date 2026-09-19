@@ -88,8 +88,10 @@ function tick(time) {
   }
   wasSolved = solved;
 
+  const allComplete = solved && !state.hasNextLevel;
   nextLevelBtn.disabled = !(solved && state.hasNextLevel);
-  nextLevelBtn.textContent = solved && !state.hasNextLevel ? "All levels complete" : "→";
+  nextLevelBtn.textContent = allComplete ? "✓" : "→";
+  nextLevelBtn.title = allComplete ? "All levels complete" : "Next level";
   prevLevelBtn.disabled = !state.hasPrevLevel;
 
   const draggingView = view.draggingToolView;
