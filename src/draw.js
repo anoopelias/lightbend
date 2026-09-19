@@ -38,6 +38,34 @@ export function drawCells(board) {
   }
 }
 
+// A fixed obstacle, drawn as a raised platform filling its cell -- a dark
+// drop shadow peeking out from under a lighter top face reads as "solid
+// block sitting above the floor" without needing an isometric perspective.
+export function drawBlocker(board, blocker) {
+  const { ctx, cellRect } = board;
+  const r = cellRect(blocker.col, blocker.row);
+  const inset = Math.max(1, r.w * 0.06);
+  const lift = Math.max(2, r.w * 0.08);
+  const x = r.x + inset;
+  const y = r.y + inset;
+  const w = r.w - inset * 2;
+  const h = r.h - inset * 2;
+
+  roundRect(ctx, x, y + lift, w, h, 3);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.fill();
+
+  roundRect(ctx, x, y, w, h - lift, 3);
+  const grad = ctx.createLinearGradient(x, y, x, y + h - lift);
+  grad.addColorStop(0, "#4b515c");
+  grad.addColorStop(1, "#2c3038");
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
 // Drawn as an emitter tube pointing the direction it fires, rather than a
 // plain dot -- the shape itself reads as "source", clearly distinct from
 // the target's ring, and needs no separate direction indicator.
@@ -217,6 +245,13 @@ export function drawMirror(board, mirror, view) {
 
 export function drawSplitter(board, splitter, view) {
   drawToolBase(board, splitter, view, drawSplitterGlyph);
+}
+
+// Same glyph as the mirror -- it's the caller's rotation angle
+// (BENDER_BASE_ANGLE in view_state.js, offset 22.5deg from the mirror's own)
+// that makes a bender visibly distinct at a glance despite sharing the mirror's shape.
+export function drawBender(board, bender, view) {
+  drawToolBase(board, bender, view, drawMirrorGlyph);
 }
 
 // Mutates view.ripple (clears it once the hit-pulse animation finishes).

@@ -10,12 +10,21 @@
 // each step's 45-degree share of the full turn to line the two up. The
 // splitter's step is the line itself (not a face normal, since it's
 // two-sided), and its glyph is a plain horizontal line, so step 0 needs no
-// such offset.
+// such offset. The bender reuses the mirror's glyph but sits an extra
+// 22.5deg (half a step) further round, so it reads as a visibly different
+// tool at a glance even at the same step.
 const MIRROR_BASE_ANGLE = Math.PI / 2;
 const SPLITTER_BASE_ANGLE = 0;
+const BENDER_BASE_ANGLE = Math.PI / 2 + Math.PI / 8;
+
+function baseAngle(kind) {
+  if (kind === "splitter") return SPLITTER_BASE_ANGLE;
+  if (kind === "bender") return BENDER_BASE_ANGLE;
+  return MIRROR_BASE_ANGLE;
+}
 
 function createToolView(tool) {
-  const base = tool.kind === "splitter" ? SPLITTER_BASE_ANGLE : MIRROR_BASE_ANGLE;
+  const base = baseAngle(tool.kind);
   const angle = base + tool.step * (Math.PI / 4);
   return {
     angle,

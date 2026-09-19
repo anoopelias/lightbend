@@ -50,6 +50,16 @@ export class Target {
   }
 }
 
+// A fixed obstacle, placed by the level itself rather than the player --
+// never movable, never rotatable. Its housing blocks any beam that reaches
+// it, the same as a source's.
+export class Blocker {
+  constructor(col, row) {
+    this.col = col;
+    this.row = row;
+  }
+}
+
 export class Mirror {
   kind = "mirror";
   col = null;
@@ -129,6 +139,47 @@ export class Splitter {
   }
 }
 
+export class Bender {
+  kind = "bender";
+  col = null;
+  row = null;
+  step = 0;
+  placed = false;
+
+  rotate() {
+    this.step = (this.step + 1) % 8;
+  }
+
+  moveTo(col, row) {
+    this.col = col;
+    this.row = row;
+    this.placed = true;
+  }
+
+  isAt(col, row) {
+    return this.placed && col === this.col && row === this.row;
+  }
+
+  // A one-sided card like the mirror -- rendered rotated an extra 22.5deg
+  // off its positions (see BENDER_BASE_ANGLE in view_state.js) -- but where
+  // a mirror reflects at whatever angle the incidence works out to, the
+  // bender always turns a beam by a flat 45deg. Heading in close to
+  // dead-on is too steep a redirect for that, so -- like heading in from
+  // behind -- it's blocked there too; only the two more glancing angles
+  // either side of dead-on bend cleanly, one 45deg to either side of
+  // straight through. Heading exactly parallel to it grazes past
+  // unaffected, same as a mirror. Returns the outgoing direction, or
+  // undefined if blocked.
+  bend(dir) {
+    const d = DIR_ORDER.indexOf(dir);
+    const diff = (d - this.step + 8) % 8;
+    if (diff === 2 || diff === 6) return dir; // parallel -- grazes past, unaffected
+    if (diff === 3) return DIR_ORDER[(d + 7) % 8]; // bends 45deg one way
+    if (diff === 5) return DIR_ORDER[(d + 1) % 8]; // bends 45deg the other way
+    return undefined; // too steep (near dead-on), or from behind -- blocked
+  }
+}
+
 export class GameState {
   constructor() {
     const saved = loadProgress();
@@ -146,9 +197,11 @@ export class GameState {
     this.levelIndex = index;
     this.sources = level.sources.map((s) => new Source(s.col, s.row, s.dir, s.color));
     this.targets = level.targets.map((t) => new Target(t.col, t.row, t.color));
+    this.blockers = (level.blockers ?? []).map((b) => new Blocker(b.col, b.row));
     this.tools = [
       ...Array.from({ length: level.mirrorCount ?? 0 }, () => new Mirror()),
       ...Array.from({ length: level.splitterCount ?? 0 }, () => new Splitter()),
+      ...Array.from({ length: level.benderCount ?? 0 }, () => new Bender()),
     ];
     this.applySnapshot(this.levelSnapshots[index]);
     this.captureSnapshot();
@@ -225,6 +278,7 @@ export class GameState {
     if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
     if (this.sources.some((s) => s.col === col && s.row === row)) return false;
     if (this.targets.some((t) => t.col === col && t.row === row)) return false;
+    if (this.blockers.some((b) => b.col === col && b.row === row)) return false;
     if (this.tools.some((t) => t !== ignoring && t.isAt(col, row))) return false;
     return true;
   }
@@ -245,13 +299,13 @@ export class GameState {
 
   // Traces one source's beam, following it (and any beams a splitter spawns
   // off it) until each ray exits the grid or is blocked -- by a mirror's
-  // black side, a splitter's closed end, or reaching any source's cell
-  // (its own included, though a beam starting there never re-enters it).
-  // Targets never block a beam -- it passes straight through, whether or
-  // not their color matches. A splitter mostly doesn't redirect a beam
-  // like a mirror does -- the beam keeps going, and a second one branches
-  // off perpendicular to it (see Splitter.split) -- so one source can
-  // produce several ray segments.
+  // black side, a bender's, a splitter's closed end, a fixed blocker, or
+  // reaching any source's cell (its own included, though a beam starting
+  // there never re-enters it). Targets never block a beam -- it passes
+  // straight through, whether or not their color matches. A splitter mostly
+  // doesn't redirect a beam like a mirror does -- the beam keeps going, and
+  // a second one branches off perpendicular to it (see Splitter.split) --
+  // so one source can produce several ray segments.
   // Returns those segments (each a list of grid-space cells, for drawing)
   // and the full set of cells visited across all of them, as "col,row" keys
   // (used to check which colors pass through a given target).
@@ -278,6 +332,10 @@ export class GameState {
           segment.push({ col, row });
           break; // a source's housing blocks any beam reaching it, own or not
         }
+        if (this.blockers.some((b) => b.col === col && b.row === row)) {
+          segment.push({ col, row });
+          break; // a fixed obstacle -- blocked
+        }
 
         const tool = this.toolAt(col, row);
         if (tool?.kind === "mirror") {
@@ -292,6 +350,13 @@ export class GameState {
           const { through, branch } = tool.split(dir);
           if (branch) segments.push(trace(col, row, branch));
           if (!through) break; // hit the closed end -- blocked
+          continue;
+        }
+        if (tool?.kind === "bender") {
+          segment.push({ col, row });
+          const outDir = tool.bend(dir);
+          if (!outDir) break; // too steep, or hit from behind -- blocked
+          dir = outDir;
           continue;
         }
       }
