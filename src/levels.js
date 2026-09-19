@@ -99,6 +99,23 @@ export const LEVELS = [
     splitterCount: 2,
     benderCount: 1,
   },
+  {
+    sources: [{ col: 0, row: 14, dir: "up", color: "green" }],
+    targets: [
+      { col: 2, row: 11, color: "green" },
+      { col: 6, row: 5, color: "green" },
+      { col: 12, row: 3, color: "green" },
+      { col: 12, row: 13, color: "green" },
+    ],
+    // Fixed splitters, oriented like a backslash (step 1), filling every row
+    // of columns 2, 4, 10 and 13 -- except where a target already sits.
+    fixedTools: [2, 4, 10, 13].flatMap((col) =>
+      columnCells(col, 15, [{ col: 2, row: 11 }]).map((c) => ({ kind: "splitter", col: c.col, row: c.row, step: 1 }))
+    ),
+    mirrorCount: 3,
+    splitterCount: 2,
+    benderCount: 1,
+  },
 ];
 
 // Every cell along the outer ring of a `size`x`size` grid.
@@ -111,6 +128,16 @@ function borderCells(size) {
   for (let i = 1; i < size - 1; i++) {
     cells.push({ col: 0, row: i });
     cells.push({ col: size - 1, row: i });
+  }
+  return cells;
+}
+
+// Every cell in a `size`-row column, skipping any cells listed in `skip`.
+function columnCells(col, size, skip = []) {
+  const cells = [];
+  for (let row = 0; row < size; row++) {
+    if (skip.some((s) => s.col === col && s.row === row)) continue;
+    cells.push({ col, row });
   }
   return cells;
 }
