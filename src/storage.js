@@ -22,3 +22,11 @@ export function saveProgress(progress) {
     // storage unavailable (private browsing, quota) -- just skip saving
   }
 }
+
+export function clearProgress() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // storage unavailable -- nothing to clear
+  }
+}

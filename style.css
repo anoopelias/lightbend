@@ -57,6 +57,36 @@ body {
   margin-bottom: 10px;
 }
 
+.level-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Testability affordance (clear saved progress), not a primary action --
+   kept small and muted so it doesn't compete with the level nav next to it. */
+.reset-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.reset-btn:hover {
+  opacity: 1;
+  background: rgba(255, 93, 115, 0.15);
+}
+
 .level-select-wrap {
   position: relative;
   display: flex;

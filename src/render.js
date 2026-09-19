@@ -3,6 +3,7 @@ import { Board } from "./board.js";
 import { drawCells, drawSnapTarget, drawSource, drawMirror, drawSplitter, drawTarget, drawBeam } from "./draw.js";
 import { DragController } from "./input.js";
 import { ViewState } from "./view_state.js";
+import { clearProgress } from "./storage.js";
 
 const state = new GameState();
 
@@ -17,6 +18,7 @@ const board = new Board({
 const nextLevelBtn = document.getElementById("next-level");
 const prevLevelBtn = document.getElementById("prev-level");
 const levelSelect = document.getElementById("level-select");
+const resetBtn = document.getElementById("reset-progress");
 const paletteSlotEls = Array.from(document.querySelectorAll(".palette-slot"));
 
 // Keeps each palette slot the same pixel size as a single grid cell, so the
@@ -72,6 +74,13 @@ prevLevelBtn.addEventListener("click", () => {
 levelSelect.addEventListener("change", () => {
   state.goToLevel(Number(levelSelect.value));
   afterLevelChange();
+});
+
+resetBtn.addEventListener("click", () => {
+  if (window.confirm("Clear saved progress? This resets every level back to blank.")) {
+    clearProgress();
+    window.location.reload();
+  }
 });
 
 syncLevelSelect();
