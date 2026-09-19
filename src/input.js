@@ -21,8 +21,9 @@ const mirrorIconSvg = (gradId) => `
   </svg>`;
 
 // Same reasoning as the mirror icon above -- matches step 0's actual grid
-// orientation (see SPLITTER_BASE_ANGLE in view_state.js), a horizontal line
-// with caps at both ends, not the vertical one this used to show.
+// orientation (see SPLITTER_BASE_ANGLE in view_state.js): an "I-beam", a
+// thin horizontal stem with a thick black flange perpendicular to it at
+// each end.
 const splitterIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
@@ -33,8 +34,8 @@ const splitterIconSvg = (gradId) => `
       </linearGradient>
     </defs>
     <line x1="7" y1="12" x2="17" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
-    <line x1="2.5" y1="12" x2="6" y2="12" stroke="#0e1014" stroke-width="2.6" />
-    <line x1="18" y1="12" x2="21.5" y2="12" stroke="#0e1014" stroke-width="2.6" />
+    <line x1="7" y1="7" x2="7" y2="17" stroke="#0e1014" stroke-width="3.6" stroke-linecap="round" />
+    <line x1="17" y1="7" x2="17" y2="17" stroke="#0e1014" stroke-width="3.6" stroke-linecap="round" />
   </svg>`;
 
 const toolIconSvg = (tool, gradId) => (tool.kind === "splitter" ? splitterIconSvg(gradId) : mirrorIconSvg(gradId));

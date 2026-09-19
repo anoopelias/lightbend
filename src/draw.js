@@ -117,36 +117,37 @@ function drawMirrorGlyph(ctx, len) {
   ctx.stroke();
 }
 
-// Drawn as a glassy middle stroke with a black bar capping each end, inline
-// with the same axis (matching the palette icon) -- a beam splits or
-// passes through the same way regardless of which side it hits, so there's
-// no front/back shading like the mirror's, just the two end caps.
+// Drawn as an "I-beam": a thin glassy stem with a thick black flange
+// perpendicular to it at each end -- a beam splits or passes through the
+// same way regardless of which side it hits, so there's no front/back
+// shading like the mirror's, just the two end caps.
 function drawSplitterGlyph(ctx, len) {
   ctx.lineCap = "round";
-  ctx.lineWidth = 2.4;
 
-  const glassyHalf = len * 0.27;
-  const capStart = len * 0.32;
-  const capEnd = len * 0.5;
+  const stemHalf = len * 0.46;
+  const capX = len * 0.46;
+  const capHalf = len * 0.27;
 
-  const grad = ctx.createLinearGradient(-glassyHalf, 0, glassyHalf, 0);
+  const grad = ctx.createLinearGradient(-stemHalf, 0, stemHalf, 0);
   grad.addColorStop(0, "#7fc4e8");
   grad.addColorStop(0.5, "#f0fbff");
   grad.addColorStop(1, "#7fc4e8");
   ctx.strokeStyle = grad;
+  ctx.lineWidth = 2.4;
   ctx.shadowColor = "rgba(127, 196, 232, 0.6)";
   ctx.shadowBlur = 5;
   ctx.beginPath();
-  ctx.moveTo(-glassyHalf, 0);
-  ctx.lineTo(glassyHalf, 0);
+  ctx.moveTo(-stemHalf, 0);
+  ctx.lineTo(stemHalf, 0);
   ctx.stroke();
   ctx.shadowBlur = 0;
 
   ctx.strokeStyle = "#0e1014";
-  for (const sign of [-1, 1]) {
+  ctx.lineWidth = len * 0.16;
+  for (const x of [-capX, capX]) {
     ctx.beginPath();
-    ctx.moveTo(sign * capStart, 0);
-    ctx.lineTo(sign * capEnd, 0);
+    ctx.moveTo(x, -capHalf);
+    ctx.lineTo(x, capHalf);
     ctx.stroke();
   }
 }
