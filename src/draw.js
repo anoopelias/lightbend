@@ -90,30 +90,37 @@ export function drawSource(board, source, time) {
   ctx.restore();
 }
 
-// Drawn as a thin two-sided card: a reflective metallic face and a black
-// backing, so which side is the mirror face reads at a glance. The
+// Drawn as a flat reflective face backed by a curved black shell, like a
+// plano-convex lens, so which side is the mirror face reads at a glance. The
 // reflective face is always the same local side (-1); it's the caller's
 // rotation angle -- a multiple of 90 degrees from mirror.step -- that sweeps
 // it to face the right way, so there's nothing here to fall out of sync
 // with the angle mid-animation.
 function drawMirrorGlyph(ctx, len) {
   ctx.lineCap = "round";
-  ctx.lineWidth = 2;
 
-  const grad = ctx.createLinearGradient(-len / 2, -1, len / 2, -1);
+  const half = len / 2;
+  const bulge = len * 0.32;
+
+  // black backing, curving away from the flat reflective face like a
+  // plano-convex lens instead of a flat plate
+  ctx.beginPath();
+  ctx.moveTo(-half, -1);
+  ctx.lineTo(half, -1);
+  ctx.quadraticCurveTo(0, bulge, -half, -1);
+  ctx.closePath();
+  ctx.fillStyle = "#0e1014";
+  ctx.fill();
+
+  ctx.lineWidth = 2;
+  const grad = ctx.createLinearGradient(-half, -1, half, -1);
   grad.addColorStop(0, "#7c8994");
   grad.addColorStop(0.5, "#eef3f6");
   grad.addColorStop(1, "#55606b");
   ctx.strokeStyle = grad;
   ctx.beginPath();
-  ctx.moveTo(-len / 2, -1);
-  ctx.lineTo(len / 2, -1);
-  ctx.stroke();
-
-  ctx.strokeStyle = "#0e1014";
-  ctx.beginPath();
-  ctx.moveTo(-len / 2, 1);
-  ctx.lineTo(len / 2, 1);
+  ctx.moveTo(-half, -1);
+  ctx.lineTo(half, -1);
   ctx.stroke();
 }
 
