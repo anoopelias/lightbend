@@ -200,6 +200,7 @@ export class DragController {
     // It's "in hand" now (the ghost below shows it) -- empty its slot right
     // away instead of leaving it sitting in the palette until it's dropped.
     const slot = e.currentTarget;
+    const slotSize = slot.getBoundingClientRect().width; // slot is square
     slot.classList.remove("palette-slot--filled");
     slot.classList.add("palette-slot--empty");
     slot.title = "";
@@ -209,6 +210,10 @@ export class DragController {
     const ghost = document.createElement("div");
     ghost.className = "drag-ghost";
     ghost.innerHTML = toolIconSvg(tool, "tool-gradient-ghost");
+    ghost.style.width = `${slotSize}px`;
+    ghost.style.height = `${slotSize}px`;
+    ghost.style.marginLeft = `${-slotSize / 2}px`;
+    ghost.style.marginTop = `${-slotSize / 2}px`;
     document.body.appendChild(ghost);
     ghost.style.left = `${e.clientX}px`;
     ghost.style.top = `${e.clientY}px`;

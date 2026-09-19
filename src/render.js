@@ -17,20 +17,23 @@ const board = new Board({
 const nextLevelBtn = document.getElementById("next-level");
 const prevLevelBtn = document.getElementById("prev-level");
 const levelSelect = document.getElementById("level-select");
-const paletteEl = document.querySelector(".palette");
+const paletteSlotEls = Array.from(document.querySelectorAll(".palette-slot"));
 
-// On mobile the palette's fixed slot size left it much narrower than the
-// board below it; match its width there instead (desktop keeps its own
-// compact size). Matches the breakpoint the rest of the mobile layout uses.
-const MOBILE_BREAKPOINT = 480;
-
-function syncPaletteWidth() {
-  paletteEl.style.width = window.innerWidth <= MOBILE_BREAKPOINT ? `${board.cssWidth}px` : "";
+// Keeps each palette slot the same pixel size as a single grid cell, so the
+// palette reads as "cut from the same grid" at any viewport size instead of
+// using its own fixed size (which looked oversized next to a shrunk mobile
+// board, or mismatched next to a shrunk desktop one).
+function syncPaletteSlotSize() {
+  const size = `${board.cellSize}px`;
+  for (const slot of paletteSlotEls) {
+    slot.style.width = size;
+    slot.style.height = size;
+  }
 }
 
-syncPaletteWidth();
-window.addEventListener("resize", syncPaletteWidth);
-window.addEventListener("orientationchange", syncPaletteWidth);
+syncPaletteSlotSize();
+window.addEventListener("resize", syncPaletteSlotSize);
+window.addEventListener("orientationchange", syncPaletteSlotSize);
 
 const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });
