@@ -45,14 +45,14 @@ export function drawBlocker(board, blocker) {
   const { ctx, cellRect } = board;
   const r = cellRect(blocker.col, blocker.row);
   const inset = Math.max(1, r.w * 0.06);
-  const lift = Math.max(2, r.w * 0.08);
+  const lift = Math.max(1, r.w * 0.05);
   const x = r.x + inset;
   const y = r.y + inset;
   const w = r.w - inset * 2;
   const h = r.h - inset * 2;
 
   roundRect(ctx, x, y + lift, w, h, 3);
-  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
   ctx.fill();
 
   roundRect(ctx, x, y, w, h - lift, 3);
