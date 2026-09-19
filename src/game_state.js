@@ -160,23 +160,23 @@ export class Bender {
     return this.placed && col === this.col && row === this.row;
   }
 
-  // A one-sided card like the mirror -- rendered rotated an extra 22.5deg
-  // off its positions (see BENDER_BASE_ANGLE in view_state.js) -- but where
-  // a mirror reflects at whatever angle the incidence works out to, the
-  // bender always turns a beam by a flat 45deg. Heading in close to
-  // dead-on is too steep a redirect for that, so -- like heading in from
-  // behind -- it's blocked there too; only the two more glancing angles
-  // either side of dead-on bend cleanly, one 45deg to either side of
-  // straight through. Heading exactly parallel to it grazes past
-  // unaffected, same as a mirror. Returns the outgoing direction, or
-  // undefined if blocked.
+  // A one-sided card exactly like the mirror -- same reflection physics,
+  // angle in equals angle out off its face -- just with its face normal
+  // sitting half a step (22.5deg) further round than `step` alone would
+  // put a mirror's (see BENDER_BASE_ANGLE in view_state.js). That half-step
+  // offset means no incoming direction ever lands exactly parallel to it,
+  // so unlike the mirror there's no grazing-past case: the 4 directions
+  // roughly facing its normal hit the black backing and are blocked, and
+  // the other 4 reflect -- by 45deg from the two more glancing angles, or
+  // by a steeper 135deg from the two closer to dead-on. Returns the
+  // outgoing direction, or undefined if blocked.
   bend(dir) {
     const d = DIR_ORDER.indexOf(dir);
     const diff = (d - this.step + 8) % 8;
-    if (diff === 2 || diff === 6) return dir; // parallel -- grazes past, unaffected
-    if (diff === 3) return DIR_ORDER[(d + 7) % 8]; // bends 45deg one way
-    if (diff === 5) return DIR_ORDER[(d + 1) % 8]; // bends 45deg the other way
-    return undefined; // too steep (near dead-on), or from behind -- blocked
+    if (diff < 3 || diff > 6) return undefined; // facing roughly the same way as the normal -- hits the black backing, blocked
+    // The face's line sits half a step past a mirror's own (this.step + 2.5);
+    // doubling keeps that .5 as an integer through the reflection formula.
+    return DIR_ORDER[(((2 * this.step + 5 - d) % 8) + 8) % 8];
   }
 }
 
