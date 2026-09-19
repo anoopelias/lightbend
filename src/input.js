@@ -27,15 +27,15 @@ const mirrorIconSvg = (gradId) => `
 const splitterIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="7" y1="12" x2="17" y2="12" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${gradId}" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#bfe9ff" />
         <stop offset="0.5" stop-color="#f0fbff" />
         <stop offset="1" stop-color="#7fc4e8" />
       </linearGradient>
     </defs>
-    <line x1="7" y1="12" x2="17" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
-    <line x1="7" y1="9" x2="7" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
-    <line x1="17" y1="9" x2="17" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
+    <line x1="2" y1="12" x2="22" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
+    <line x1="2" y1="9" x2="2" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
+    <line x1="22" y1="9" x2="22" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
   </svg>`;
 
 const toolIconSvg = (tool, gradId) => (tool.kind === "splitter" ? splitterIconSvg(gradId) : mirrorIconSvg(gradId));
