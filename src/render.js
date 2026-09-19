@@ -120,8 +120,16 @@ function tick(time) {
   if (draggingView) drawSnapTarget(board, draggingView, snapValid);
 
   computeBeamEdges(beams).forEach(({ from, to, color }) => {
-    const points = [board.cellCenter(from.col, from.row), board.cellCenter(to.col, to.row)];
-    drawBeam(board, points, color, time);
+    const fromPt = board.cellCenter(from.col, from.row);
+    let toPt = board.cellCenter(to.col, to.row);
+    if (state.blockers.some((b) => b.col === to.col && b.row === to.row)) {
+      // A blocker's platform fills its whole cell, so the beam should stop
+      // at its near edge instead of visually boring into the middle.
+      const dx = Math.sign(to.col - from.col);
+      const dy = Math.sign(to.row - from.row);
+      toPt = { x: toPt.x - (dx * board.cellSize) / 2, y: toPt.y - (dy * board.cellSize) / 2 };
+    }
+    drawBeam(board, [fromPt, toPt], color, time);
   });
 
   state.sources.forEach((source) => drawSource(board, source, time));
