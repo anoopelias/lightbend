@@ -71,7 +71,7 @@ body {
 .level-select-wrap::after {
   content: "";
   position: absolute;
-  right: 11px;
+  right: 8px;
   top: 50%;
   width: 6px;
   height: 6px;
@@ -84,7 +84,11 @@ body {
 .level-select {
   appearance: none;
   -webkit-appearance: none;
-  padding: 7px 26px 7px 14px;
+  /* The select shrink-wraps to its content, so text-align:center has
+     nothing extra to center with -- these paddings alone control the
+     gap on each side of the text, so keep them close to equal (the
+     right one just needs a little more room for the arrow). */
+  padding: 7px 20px 7px 10px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -92,7 +96,6 @@ body {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  text-align: center;
   cursor: pointer;
   transition: background 0.15s;
 }
