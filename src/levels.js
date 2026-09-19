@@ -73,4 +73,34 @@ export const LEVELS = [
     mirrorCount: 0,
     splitterCount: 4,
   },
+  {
+    sources: [
+      { col: 3, row: 1, dir: "down", color: "red" },
+      { col: 10, row: 1, dir: "down", color: "blue" },
+    ],
+    targets: [
+      { col: 7, row: 3, color: "blue" },
+      { col: 11, row: 4, color: "red" },
+      { col: 4, row: 5, color: "blue" },
+      { col: 5, row: 9, color: "red" },
+    ],
+    blockers: borderCells(15),
+    mirrorCount: 0,
+    splitterCount: 0,
+    benderCount: 3,
+  },
 ];
+
+// Every cell along the outer ring of a `size`x`size` grid.
+function borderCells(size) {
+  const cells = [];
+  for (let i = 0; i < size; i++) {
+    cells.push({ col: i, row: 0 });
+    cells.push({ col: i, row: size - 1 });
+  }
+  for (let i = 1; i < size - 1; i++) {
+    cells.push({ col: 0, row: i });
+    cells.push({ col: size - 1, row: i });
+  }
+  return cells;
+}
