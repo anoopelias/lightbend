@@ -89,6 +89,16 @@ export const LEVELS = [
     splitterCount: 0,
     benderCount: 3,
   },
+  {
+    sources: [{ col: 3, row: 11, dir: "right", color: "blue" }],
+    targets: [
+      { col: 2, row: 9, color: "blue" },
+      { col: 4, row: 3, color: "blue" },
+      { col: 12, row: 5, color: "blue" },
+    ],
+    splitterCount: 2,
+    benderCount: 1,
+  },
 ];
 
 // Every cell along the outer ring of a `size`x`size` grid.
