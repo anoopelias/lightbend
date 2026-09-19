@@ -221,6 +221,19 @@ body {
   cursor: default;
 }
 
+/* All levels solved: still non-interactive (disabled), but this reads as a
+   finished/successful state, not a dead end -- so it stays fully lit,
+   in the same green already used for lit targets, instead of the usual
+   grayed-out disabled look. */
+.next-level-btn.next-level-btn--complete:disabled {
+  opacity: 1;
+  filter: none;
+  background: var(--target-on);
+  color: #14161c;
+  box-shadow: 0 6px 16px -6px rgba(111, 207, 151, 0.6);
+  cursor: default;
+}
+
 .palette {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

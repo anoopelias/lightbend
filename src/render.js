@@ -92,6 +92,7 @@ function tick(time) {
   nextLevelBtn.disabled = !(solved && state.hasNextLevel);
   nextLevelBtn.textContent = allComplete ? "✓" : "→";
   nextLevelBtn.title = allComplete ? "All levels complete" : "Next level";
+  nextLevelBtn.classList.toggle("next-level-btn--complete", allComplete);
   prevLevelBtn.disabled = !state.hasPrevLevel;
 
   const draggingView = view.draggingToolView;
