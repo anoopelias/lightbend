@@ -108,9 +108,9 @@ export const LEVELS = [
       { col: 12, row: 13, color: "green" },
     ],
     // Fixed splitters, oriented like a backslash (step 1), filling every row
-    // of columns 2, 4, 10 and 13 -- except where a target already sits.
-    fixedTools: [2, 4, 10, 13].flatMap((col) =>
-      columnCells(col, 15, [{ col: 2, row: 11 }]).map((c) => ({ kind: "splitter", col: c.col, row: c.row, step: 1 }))
+    // of columns 1, 4, 10 and 13.
+    fixedTools: [1, 4, 10, 13].flatMap((col) =>
+      columnCells(col, 15).map((c) => ({ kind: "splitter", col: c.col, row: c.row, step: 1 }))
     ),
     mirrorCount: 3,
     splitterCount: 2,
