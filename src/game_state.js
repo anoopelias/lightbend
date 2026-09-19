@@ -66,6 +66,7 @@ export class Mirror {
   row = null;
   step = 0;
   placed = false;
+  fixed = false; // placed by the level itself, immovable -- never draggable or rotatable
 
   rotate() {
     this.step = (this.step + 1) % 8;
@@ -105,6 +106,7 @@ export class Splitter {
   row = null;
   step = 0;
   placed = false;
+  fixed = false; // placed by the level itself, immovable -- never draggable or rotatable
 
   rotate() {
     this.step = (this.step + 1) % 8;
@@ -145,6 +147,7 @@ export class Bender {
   row = null;
   step = 0;
   placed = false;
+  fixed = false; // placed by the level itself, immovable -- never draggable or rotatable
 
   rotate() {
     this.step = (this.step + 1) % 8;
@@ -180,6 +183,16 @@ export class Bender {
   }
 }
 
+// Builds one of a level's own fixed tools -- pre-placed and immovable,
+// unlike the player's draggable inventory.
+function createFixedTool({ kind, col, row, step = 0 }) {
+  const tool = kind === "splitter" ? new Splitter() : kind === "bender" ? new Bender() : new Mirror();
+  tool.step = step;
+  tool.moveTo(col, row);
+  tool.fixed = true;
+  return tool;
+}
+
 export class GameState {
   constructor() {
     const saved = loadProgress();
@@ -202,6 +215,7 @@ export class GameState {
       ...Array.from({ length: level.mirrorCount ?? 0 }, () => new Mirror()),
       ...Array.from({ length: level.splitterCount ?? 0 }, () => new Splitter()),
       ...Array.from({ length: level.benderCount ?? 0 }, () => new Bender()),
+      ...(level.fixedTools ?? []).map(createFixedTool),
     ];
     this.applySnapshot(this.levelSnapshots[index]);
     this.captureSnapshot();
@@ -286,6 +300,7 @@ export class GameState {
   // Places `tool` on the grid (from the palette, or repositions it if
   // already placed).
   moveTool(tool, col, row) {
+    if (tool.fixed) return false;
     if (!this.canPlaceTool(col, row, tool)) return false;
     tool.moveTo(col, row);
     this.captureSnapshot();
@@ -293,6 +308,7 @@ export class GameState {
   }
 
   rotateTool(tool) {
+    if (tool.fixed) return;
     tool.rotate();
     this.captureSnapshot();
   }
