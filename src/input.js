@@ -10,14 +10,14 @@ const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not
 const mirrorIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="13" y1="21" x2="13" y2="3" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${gradId}" x1="13" y1="23" x2="13" y2="1" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#7c8994" />
         <stop offset="0.5" stop-color="#eef3f6" />
         <stop offset="1" stop-color="#55606b" />
       </linearGradient>
     </defs>
-    <line x1="13" y1="3" x2="13" y2="21" stroke="url(#${gradId})" stroke-width="1.8" />
-    <line x1="11" y1="3" x2="11" y2="21" stroke="#0e1014" stroke-width="1.8" />
+    <line x1="13" y1="1" x2="13" y2="23" stroke="url(#${gradId})" stroke-width="1.8" />
+    <line x1="11" y1="1" x2="11" y2="23" stroke="#0e1014" stroke-width="1.8" />
   </svg>`;
 
 // Same reasoning as the mirror icon above -- matches step 0's actual grid
