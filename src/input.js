@@ -2,34 +2,39 @@ import { COLS, ROWS } from "./game_state.js";
 
 const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not a click
 
+// A freshly placed tool always starts at step 0, so this icon is drawn to
+// match step 0's actual grid orientation exactly (see MIRROR_BASE_ANGLE in
+// view_state.js) -- otherwise the icon visibly snaps to a different angle
+// the instant it's dropped, reading as an unwanted rotation even though
+// none happened.
 const mirrorIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="4" y1="20" x2="20" y2="4" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${gradId}" x1="13" y1="21" x2="13" y2="3" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#7c8994" />
         <stop offset="0.5" stop-color="#eef3f6" />
         <stop offset="1" stop-color="#55606b" />
       </linearGradient>
     </defs>
-    <line x1="3.4" y1="19.4" x2="19.4" y2="3.4" stroke="url(#${gradId})" stroke-width="1.8" />
-    <line x1="4.6" y1="20.6" x2="20.6" y2="4.6" stroke="#0e1014" stroke-width="1.8" />
+    <line x1="13" y1="3" x2="13" y2="21" stroke="url(#${gradId})" stroke-width="1.8" />
+    <line x1="11" y1="3" x2="11" y2="21" stroke="#0e1014" stroke-width="1.8" />
   </svg>`;
 
-// The glassy stroke stands for the splitter's line; the black caps at both
-// ends match the grid glyph's capped-rod look, so the palette icon reads
-// the same way before it's even placed.
+// Same reasoning as the mirror icon above -- matches step 0's actual grid
+// orientation (see SPLITTER_BASE_ANGLE in view_state.js), a horizontal line
+// with caps at both ends, not the vertical one this used to show.
 const splitterIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="12" y1="7" x2="12" y2="17" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${gradId}" x1="7" y1="12" x2="17" y2="12" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#bfe9ff" />
         <stop offset="0.5" stop-color="#f0fbff" />
         <stop offset="1" stop-color="#7fc4e8" />
       </linearGradient>
     </defs>
-    <line x1="12" y1="7" x2="12" y2="17" stroke="url(#${gradId})" stroke-width="2.2" />
-    <line x1="12" y1="2.5" x2="12" y2="6" stroke="#0e1014" stroke-width="2.6" />
-    <line x1="12" y1="18" x2="12" y2="21.5" stroke="#0e1014" stroke-width="2.6" />
+    <line x1="7" y1="12" x2="17" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
+    <line x1="2.5" y1="12" x2="6" y2="12" stroke="#0e1014" stroke-width="2.6" />
+    <line x1="18" y1="12" x2="21.5" y2="12" stroke="#0e1014" stroke-width="2.6" />
   </svg>`;
 
 const toolIconSvg = (tool, gradId) => (tool.kind === "splitter" ? splitterIconSvg(gradId) : mirrorIconSvg(gradId));
