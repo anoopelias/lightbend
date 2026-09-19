@@ -89,6 +89,22 @@ export const LEVELS = [
     mirrorCount: 2,
     splitterCount: 1,
   },
+  {
+    sources: [
+      { col: 1, row: 8, dir: "right", color: "red" },
+      { col: 13, row: 6, dir: "left", color: "blue" },
+    ],
+    targets: [
+      { col: 7, row: 2, color: "red" },
+      { col: 4, row: 4, color: "red" },
+      { col: 10, row: 4, color: "red" },
+      { col: 4, row: 10, color: "blue" },
+      { col: 10, row: 10, color: "blue" },
+      { col: 7, row: 12, color: "blue" },
+    ],
+    mirrorCount: 0,
+    splitterCount: 4,
+  },
 ];
 
 export class Source {
