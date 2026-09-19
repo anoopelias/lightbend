@@ -1,6 +1,7 @@
 // ---------- Game logic (grid-space, no pixels, no drawing) ----------
 
 import { loadProgress, saveProgress } from "./storage.js";
+import { LEVELS } from "./levels.js";
 
 export const COLS = 15;
 export const ROWS = 15;
@@ -22,7 +23,7 @@ const DIR_ORDER = Object.keys(DIRS);
 // A composite target color is lit by the exact set of primary beam colors
 // it's mixed from -- a beam of any other color (or a missing one) means the
 // target doesn't light.
-const COLOR_MIX = {
+export const COLOR_MIX = {
   red: ["red"],
   green: ["green"],
   blue: ["blue"],
@@ -31,81 +32,6 @@ const COLOR_MIX = {
   magenta: ["red", "blue"],
   white: ["red", "green", "blue"],
 };
-
-// Each level lists its sources and targets (by color) and how many mirrors
-// are available to place -- the mirrors themselves always start unplaced in
-// the palette.
-export const LEVELS = [
-  {
-    sources: [{ col: 2, row: 7, dir: "right", color: "red" }],
-    targets: [{ col: 8, row: 2, color: "red" }],
-    mirrorCount: 1,
-  },
-  {
-    sources: [
-      { col: 3, row: 9, dir: "right", color: "red" },
-      { col: 12, row: 6, dir: "left", color: "blue" },
-    ],
-    targets: [
-      { col: 7, row: 10, color: "blue" },
-      { col: 8, row: 6, color: "red" },
-    ],
-    mirrorCount: 3,
-  },
-  {
-    sources: [
-      { col: 0, row: 3, dir: "downRight", color: "blue" },
-      { col: 14, row: 11, dir: "left", color: "red" },
-      { col: 3, row: 14, dir: "upRight", color: "green" },
-    ],
-    targets: [
-      { col: 7, row: 4, color: "yellow" },
-      { col: 9, row: 6, color: "cyan" },
-      { col: 7, row: 8, color: "magenta" },
-    ],
-    mirrorCount: 3,
-  },
-  {
-    sources: [{ col: 1, row: 7, dir: "right", color: "green" }],
-    targets: [
-      { col: 9, row: 3, color: "green" },
-      { col: 8, row: 4, color: "green" },
-      { col: 4, row: 4, color: "green" },
-      { col: 6, row: 5, color: "green" },
-      { col: 6, row: 11, color: "green" },
-    ],
-    mirrorCount: 0,
-    splitterCount: 3,
-  },
-  {
-    sources: [
-      { col: 1, row: 6, dir: "right", color: "red" },
-      { col: 1, row: 8, dir: "right", color: "green" },
-    ],
-    targets: [
-      { col: 12, row: 7, color: "yellow" },
-      { col: 7, row: 11, color: "yellow" },
-    ],
-    mirrorCount: 2,
-    splitterCount: 1,
-  },
-  {
-    sources: [
-      { col: 1, row: 8, dir: "right", color: "red" },
-      { col: 13, row: 6, dir: "left", color: "blue" },
-    ],
-    targets: [
-      { col: 7, row: 2, color: "red" },
-      { col: 4, row: 4, color: "red" },
-      { col: 10, row: 4, color: "red" },
-      { col: 4, row: 10, color: "blue" },
-      { col: 10, row: 10, color: "blue" },
-      { col: 7, row: 12, color: "blue" },
-    ],
-    mirrorCount: 0,
-    splitterCount: 4,
-  },
-];
 
 export class Source {
   constructor(col, row, dir, color) {
@@ -396,95 +322,4 @@ export class GameState {
 
     return { beams, hitTargets };
   }
-}
-
-// Breaks every beam down into unit grid-edges, merging the ones different
-// sources' beams both cross so an overlap draws as its mixed color (e.g. a
-// red beam and a green beam sharing a stretch of path draws yellow there)
-// instead of one beam simply painting over the other -- then re-merges
-// consecutive unit edges that end up the same color back into one long run,
-// so a plain, non-overlapping stretch is still one continuous stroke rather
-// than many 1-cell strokes whose round caps show up as dots at every cell
-// boundary.
-export function computeBeamEdges(beams) {
-  const unitColors = new Map(); // canonical "c1,r1|c2,r2" -> Set of colors
-  const unitEdges = []; // { from, to, key }, one entry per distinct unit edge
-
-  for (const { source, segments } of beams) {
-    for (const segment of segments) {
-      for (let i = 0; i < segment.length - 1; i++) {
-        const a = segment[i];
-        const b = segment[i + 1];
-        const dx = Math.sign(b.col - a.col);
-        const dy = Math.sign(b.row - a.row);
-        const steps = Math.max(Math.abs(b.col - a.col), Math.abs(b.row - a.row));
-        let col = a.col;
-        let row = a.row;
-        for (let s = 0; s < steps; s++) {
-          const nextCol = col + dx;
-          const nextRow = row + dy;
-          const from = { col, row };
-          const to = { col: nextCol, row: nextRow };
-          const key = edgeKey(from, to);
-          if (!unitColors.has(key)) {
-            unitColors.set(key, new Set());
-            unitEdges.push({ from, to, key });
-          }
-          unitColors.get(key).add(source.color);
-          col = nextCol;
-          row = nextRow;
-        }
-      }
-    }
-  }
-
-  // Group unit edges by the straight line they lie on, in each case with a
-  // consistent forward direction, so consecutive same-color ones can be
-  // merged into one run regardless of which beam(s) first walked over them.
-  const lines = new Map(); // line key -> [{ pos, from, to, color }]
-  for (const { from, to, key } of unitEdges) {
-    const color = mixColorName(unitColors.get(key));
-    const vertical = from.col === to.col;
-    const [start, end] = (vertical ? from.row > to.row : from.col > to.col) ? [to, from] : [from, to];
-    // A "\" diagonal (col and row both increase together) keeps row - col
-    // constant; a "/" diagonal (col up, row down) keeps row + col constant.
-    const lineKey = vertical
-      ? `v:${start.col}`
-      : start.row === end.row
-        ? `h:${start.row}`
-        : end.row > start.row
-          ? `d1:${start.row - start.col}`
-          : `d2:${start.row + start.col}`;
-    const pos = vertical ? start.row : start.col;
-    if (!lines.has(lineKey)) lines.set(lineKey, []);
-    lines.get(lineKey).push({ pos, from: start, to: end, color });
-  }
-
-  const runs = [];
-  for (const segs of lines.values()) {
-    segs.sort((a, b) => a.pos - b.pos);
-    let current = null;
-    for (const seg of segs) {
-      if (current && current.color === seg.color && current.to.col === seg.from.col && current.to.row === seg.from.row) {
-        current.to = seg.to;
-      } else {
-        if (current) runs.push(current);
-        current = { from: seg.from, to: seg.to, color: seg.color };
-      }
-    }
-    if (current) runs.push(current);
-  }
-
-  return runs;
-}
-
-function edgeKey(a, b) {
-  return a.col < b.col || (a.col === b.col && a.row <= b.row) ? `${a.col},${a.row}|${b.col},${b.row}` : `${b.col},${b.row}|${a.col},${a.row}`;
-}
-
-function mixColorName(colors) {
-  for (const [name, parts] of Object.entries(COLOR_MIX)) {
-    if (parts.length === colors.size && parts.every((c) => colors.has(c))) return name;
-  }
-  return colors.values().next().value;
 }

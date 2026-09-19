@@ -1,4 +1,5 @@
-import { COLS, ROWS, GameState, computeBeamEdges } from "./game_state.js";
+import { COLS, ROWS, GameState } from "./game_state.js";
+import { computeBeamEdges } from "./beam_edges.js";
 import { Board } from "./board.js";
 import { drawCells, drawSnapTarget, drawSource, drawMirror, drawSplitter, drawTarget, drawBeam } from "./draw.js";
 import { DragController } from "./input.js";
