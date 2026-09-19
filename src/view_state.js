@@ -16,10 +16,11 @@ const SPLITTER_BASE_ANGLE = 0;
 
 function createToolView(tool) {
   const base = tool.kind === "splitter" ? SPLITTER_BASE_ANGLE : MIRROR_BASE_ANGLE;
+  const angle = base + tool.step * (Math.PI / 4);
   return {
-    angle: base,
-    targetAngle: base,
-    lastStep: 0,
+    angle,
+    targetAngle: angle,
+    lastStep: tool.step,
     hovering: false,
     dragging: false,
     dragPos: null, // pixel position the tool is being dragged to
