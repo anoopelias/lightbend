@@ -224,7 +224,7 @@ body {
 .palette {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 0;
   flex-shrink: 0;
   padding: 10px;
   background: var(--glass);
