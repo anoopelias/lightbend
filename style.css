@@ -42,13 +42,6 @@ body {
   padding: 24px;
 }
 
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
 .board-column {
   align-self: center;
   display: flex;
@@ -56,9 +49,11 @@ body {
   align-items: stretch;
 }
 
-.level-bar {
+.board-toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 10px;
 }
 
@@ -296,12 +291,6 @@ body {
     padding: 12px;
   }
 
-  .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
   .header {
     margin-bottom: 18px;
   }
@@ -335,7 +324,7 @@ body {
     height: 5px;
   }
 
-  .toolbar {
+  .board-toolbar {
     gap: 6px;
   }
 }
