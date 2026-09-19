@@ -126,7 +126,7 @@ function drawSplitterGlyph(ctx, len) {
 
   const stemHalf = len * 0.46;
   const capX = len * 0.46;
-  const capHalf = len * 0.27;
+  const capHalf = len * 0.11;
 
   const grad = ctx.createLinearGradient(-stemHalf, 0, stemHalf, 0);
   grad.addColorStop(0, "#7fc4e8");
@@ -143,7 +143,7 @@ function drawSplitterGlyph(ctx, len) {
   ctx.shadowBlur = 0;
 
   ctx.strokeStyle = "#0e1014";
-  ctx.lineWidth = len * 0.16;
+  ctx.lineWidth = len * 0.14;
   for (const x of [-capX, capX]) {
     ctx.beginPath();
     ctx.moveTo(x, -capHalf);

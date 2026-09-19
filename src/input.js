@@ -34,8 +34,8 @@ const splitterIconSvg = (gradId) => `
       </linearGradient>
     </defs>
     <line x1="7" y1="12" x2="17" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
-    <line x1="7" y1="7" x2="7" y2="17" stroke="#0e1014" stroke-width="3.6" stroke-linecap="round" />
-    <line x1="17" y1="7" x2="17" y2="17" stroke="#0e1014" stroke-width="3.6" stroke-linecap="round" />
+    <line x1="7" y1="9.6" x2="7" y2="14.4" stroke="#0e1014" stroke-width="3" stroke-linecap="round" />
+    <line x1="17" y1="9.6" x2="17" y2="14.4" stroke="#0e1014" stroke-width="3" stroke-linecap="round" />
   </svg>`;
 
 const toolIconSvg = (tool, gradId) => (tool.kind === "splitter" ? splitterIconSvg(gradId) : mirrorIconSvg(gradId));
