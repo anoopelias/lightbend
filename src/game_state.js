@@ -381,3 +381,49 @@ export class GameState {
     return { beams, hitTargets };
   }
 }
+
+// Breaks every beam down into unit grid-edges and merges the ones different
+// sources' beams both cross, so an overlap draws as its mixed color (e.g. a
+// red beam and a green beam sharing a stretch of path draws yellow there)
+// instead of one beam simply painting over the other.
+export function computeBeamEdges(beams) {
+  const edges = new Map(); // canonical "c1,r1|c2,r2" -> { from, to, colors }
+
+  for (const { source, segments } of beams) {
+    for (const segment of segments) {
+      for (let i = 0; i < segment.length - 1; i++) {
+        const a = segment[i];
+        const b = segment[i + 1];
+        const dx = Math.sign(b.col - a.col);
+        const dy = Math.sign(b.row - a.row);
+        const steps = Math.max(Math.abs(b.col - a.col), Math.abs(b.row - a.row));
+        let col = a.col;
+        let row = a.row;
+        for (let s = 0; s < steps; s++) {
+          const nextCol = col + dx;
+          const nextRow = row + dy;
+          const key = edgeKey(col, row, nextCol, nextRow);
+          if (!edges.has(key)) {
+            edges.set(key, { from: { col, row }, to: { col: nextCol, row: nextRow }, colors: new Set() });
+          }
+          edges.get(key).colors.add(source.color);
+          col = nextCol;
+          row = nextRow;
+        }
+      }
+    }
+  }
+
+  return [...edges.values()].map((edge) => ({ ...edge, color: mixColorName(edge.colors) }));
+}
+
+function edgeKey(c1, r1, c2, r2) {
+  return c1 < c2 || (c1 === c2 && r1 <= r2) ? `${c1},${r1}|${c2},${r2}` : `${c2},${r2}|${c1},${r1}`;
+}
+
+function mixColorName(colors) {
+  for (const [name, parts] of Object.entries(COLOR_MIX)) {
+    if (parts.length === colors.size && parts.every((c) => colors.has(c))) return name;
+  }
+  return colors.values().next().value;
+}

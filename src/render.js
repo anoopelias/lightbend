@@ -1,4 +1,4 @@
-import { COLS, ROWS, GameState } from "./game_state.js";
+import { COLS, ROWS, GameState, computeBeamEdges } from "./game_state.js";
 import { Board } from "./board.js";
 import { drawCells, drawSnapTarget, drawSource, drawMirror, drawSplitter, drawTarget, drawBeam } from "./draw.js";
 import { DragController } from "./input.js";
@@ -117,11 +117,9 @@ function tick(time) {
   drawCells(board);
   if (draggingView) drawSnapTarget(board, draggingView, snapValid);
 
-  beams.forEach(({ source, segments }) => {
-    segments.forEach((cells) => {
-      const points = cells.map((c) => board.cellCenter(c.col, c.row));
-      drawBeam(board, points, source.color, time);
-    });
+  computeBeamEdges(beams).forEach(({ from, to, color }) => {
+    const points = [board.cellCenter(from.col, from.row), board.cellCenter(to.col, to.row)];
+    drawBeam(board, points, color, time);
   });
 
   state.sources.forEach((source) => drawSource(board, source, time));
