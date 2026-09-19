@@ -60,15 +60,22 @@ export class Blocker {
   }
 }
 
-// A fixed, one-way gate, placed by the level like a blocker -- not a tool,
-// never movable or rotatable. A beam already travelling `dir` passes
-// straight through unaffected; any other beam is blocked, same as hitting
-// a blocker.
+// A fixed tube, placed by the level like a blocker -- not a tool, never
+// movable or rotatable. Its orientation is fixed, but it's open at both
+// ends: a beam already travelling along its axis (`dir`, or straight back
+// the opposite way) passes straight through unaffected; anything else is
+// blocked, same as hitting a blocker.
 export class Conduit {
   constructor(col, row, dir = "downRight") {
     this.col = col;
     this.row = row;
     this.dir = dir;
+  }
+
+  allows(dir) {
+    const d = DIR_ORDER.indexOf(dir);
+    const axis = DIR_ORDER.indexOf(this.dir);
+    return d === axis || d === (axis + 4) % 8;
   }
 }
 
@@ -314,7 +321,7 @@ export class GameState {
   // Traces one source's beam, following it (and any beams a splitter spawns
   // off it) until each ray exits the grid or is blocked -- by a mirror's
   // black side, a bender's, a splitter's closed end, a fixed blocker, a
-  // conduit facing the wrong way, or reaching any source's cell (its own
+  // conduit crossed off-axis, or reaching any source's cell (its own
   // included, though a beam starting there never re-enters it). Targets
   // never block a beam -- it passes
   // straight through, whether or not their color matches. A splitter mostly
@@ -352,9 +359,9 @@ export class GameState {
           break; // a fixed obstacle -- blocked
         }
         const conduit = this.conduits.find((c) => c.col === col && c.row === row);
-        if (conduit && conduit.dir !== dir) {
+        if (conduit && !conduit.allows(dir)) {
           segment.push({ col, row });
-          break; // wrong way through the gate -- blocked
+          break; // off-axis -- blocked
         }
 
         const tool = this.toolAt(col, row);

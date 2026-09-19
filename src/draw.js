@@ -66,9 +66,10 @@ export function drawBlocker(board, blocker) {
   ctx.stroke();
 }
 
-// A fixed one-way gate, drawn as a glassy diagonal channel with an
-// arrowhead at its open end -- the arrow alone tells a player which way
-// it lets light through, no need to watch it fail first.
+// A fixed tube, open at both ends along its one axis -- drawn as a glassy
+// diagonal channel with a short flange capping each end, echoing the
+// splitter's I-beam so it reads as "light passes through here" rather than
+// pointing a single-headed arrow that would wrongly suggest one-way flow.
 export function drawConduit(board, conduit) {
   const { ctx, cellRect, cellCenter } = board;
   const r = cellRect(conduit.col, conduit.row);
@@ -92,15 +93,21 @@ export function drawConduit(board, conduit) {
   ctx.lineTo(x2, y2);
   ctx.stroke();
 
-  const angle = Math.atan2(uy, ux);
-  const ah = r.w * 0.15;
-  ctx.fillStyle = "rgba(210, 240, 255, 0.85)";
-  ctx.beginPath();
-  ctx.moveTo(x2 + ux * ah * 0.4, y2 + uy * ah * 0.4);
-  ctx.lineTo(x2 - ah * Math.cos(angle - Math.PI / 6), y2 - ah * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(x2 - ah * Math.cos(angle + Math.PI / 6), y2 - ah * Math.sin(angle + Math.PI / 6));
-  ctx.closePath();
-  ctx.fill();
+  // perpendicular end caps, open tube style
+  const capHalf = r.w * 0.11;
+  const px = -uy * capHalf;
+  const py = ux * capHalf;
+  ctx.strokeStyle = "rgba(210, 240, 255, 0.85)";
+  ctx.lineWidth = r.w * 0.09;
+  for (const [ex, ey] of [
+    [x1, y1],
+    [x2, y2],
+  ]) {
+    ctx.beginPath();
+    ctx.moveTo(ex - px, ey - py);
+    ctx.lineTo(ex + px, ey + py);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
