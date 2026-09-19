@@ -4,7 +4,7 @@
 // each level they've visited, so reloading the page (or coming back to an
 // earlier level) picks up where they left off instead of starting blank.
 
-const STORAGE_KEY = "raybend-progress-v1";
+const STORAGE_KEY = "lightbend-progress-v1";
 
 export function loadProgress() {
   try {

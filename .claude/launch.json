@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "raybend",
+      "name": "lightbend",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["devserver.py", "8934"],
       "port": 8934
