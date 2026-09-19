@@ -141,12 +141,6 @@ body {
   box-shadow: 0 8px 24px -8px rgba(255, 93, 115, 0.5);
 }
 
-.tagline {
-  margin: 14px 0 0;
-  font-size: 15px;
-  color: var(--ink-soft);
-}
-
 .board-shell {
   background: var(--glass);
   border: 1px solid var(--glass-border);
@@ -315,10 +309,6 @@ body {
   .logo {
     font-size: 28px;
     padding: 8px 16px;
-  }
-
-  .tagline {
-    font-size: 13px;
   }
 
   .board-shell {
