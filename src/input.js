@@ -36,7 +36,7 @@ const splitterIconSvg = (gradId) => {
         <stop offset="1" stop-color="${c}" />
       </linearGradient>
     </defs>
-    <line x1="2" y1="12" x2="22" y2="12" stroke="url(#${gradId})" stroke-width="2.6" />
+    <line x1="2" y1="12" x2="22" y2="12" stroke="url(#${gradId})" stroke-width="3.6" />
     <line x1="2" y1="9" x2="2" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
     <line x1="22" y1="9" x2="22" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
   </svg>`;

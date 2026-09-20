@@ -228,7 +228,7 @@ function drawSplitterGlyph(ctx, len) {
   grad.addColorStop(0.5, glass[1]);
   grad.addColorStop(1, glass[2]);
   ctx.strokeStyle = grad;
-  ctx.lineWidth = 2.8;
+  ctx.lineWidth = 4.4;
   ctx.shadowColor = glow;
   ctx.shadowBlur = 5;
   ctx.beginPath();
