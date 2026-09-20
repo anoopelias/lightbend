@@ -66,10 +66,9 @@ export function drawBlocker(board, blocker) {
   ctx.stroke();
 }
 
-// A fixed tube, open at both ends along its one axis -- drawn as a glassy
-// diagonal channel with a short flange capping each end, echoing the
-// splitter's I-beam so it reads as "light passes through here" rather than
-// pointing a single-headed arrow that would wrongly suggest one-way flow.
+// A fixed tube, open at both ends along its one axis -- drawn plainly, a
+// black bar with a thin silver line down its center, so it reads as part
+// of the board's fixed furniture rather than calling attention to itself.
 export function drawConduit(board, conduit) {
   const { ctx, cellRect, cellCenter } = board;
   const r = cellRect(conduit.col, conduit.row);
@@ -86,28 +85,21 @@ export function drawConduit(board, conduit) {
 
   ctx.save();
   ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(127, 196, 232, 0.5)";
-  ctx.lineWidth = r.w * 0.16;
+
+  ctx.strokeStyle = "#0e1014";
+  ctx.lineWidth = r.w * 0.14;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
 
-  // perpendicular end caps, open tube style
-  const capHalf = r.w * 0.11;
-  const px = -uy * capHalf;
-  const py = ux * capHalf;
-  ctx.strokeStyle = "rgba(210, 240, 255, 0.85)";
-  ctx.lineWidth = r.w * 0.09;
-  for (const [ex, ey] of [
-    [x1, y1],
-    [x2, y2],
-  ]) {
-    ctx.beginPath();
-    ctx.moveTo(ex - px, ey - py);
-    ctx.lineTo(ex + px, ey + py);
-    ctx.stroke();
-  }
+  ctx.strokeStyle = "rgba(214, 224, 232, 0.55)";
+  ctx.lineWidth = r.w * 0.03;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
   ctx.restore();
 }
 
