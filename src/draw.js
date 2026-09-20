@@ -211,10 +211,12 @@ function drawBenderGlyph(ctx, len) {
   ctx.stroke();
 }
 
-// Drawn as an "I-beam": a thin glassy stem with a thick black flange
+// Drawn as an "I-beam": a thin silver stem with a thick black flange
 // perpendicular to it at each end -- a beam splits or passes through the
 // same way regardless of which side it hits, so there's no front/back
-// shading like the mirror's, just the two end caps.
+// shading like the mirror's, just the two end caps. Silver rather than
+// glass-blue reads clearly on both themes without a separate light-theme
+// color, the same as the mirror and bender's face.
 function drawSplitterGlyph(ctx, len) {
   ctx.lineCap = "round";
 
@@ -222,14 +224,13 @@ function drawSplitterGlyph(ctx, len) {
   const capX = len * 0.46;
   const capHalf = len * 0.11;
 
-  const { glass, glow } = getTheme().splitter;
   const grad = ctx.createLinearGradient(-stemHalf, 0, stemHalf, 0);
-  grad.addColorStop(0, glass[0]);
-  grad.addColorStop(0.5, glass[1]);
-  grad.addColorStop(1, glass[2]);
+  grad.addColorStop(0, "#7c8994");
+  grad.addColorStop(0.5, "#eef3f6");
+  grad.addColorStop(1, "#55606b");
   ctx.strokeStyle = grad;
   ctx.lineWidth = 4.4;
-  ctx.shadowColor = glow;
+  ctx.shadowColor = "rgba(180, 190, 200, 0.5)";
   ctx.shadowBlur = 5;
   ctx.beginPath();
   ctx.moveTo(-stemHalf, 0);

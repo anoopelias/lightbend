@@ -1,12 +1,13 @@
 // ---------- Theme (light/dark) ----------
 //
 // Covers everything the canvas draws that CSS custom properties can't
-// reach. Dark materials (mirror/bender backing, conduit bar, tool
+// reach. Most materials (mirror/bender/splitter face, conduit bar, tool
 // housings) are fixed in draw.js and never change with the theme, the way
 // a real mirror's backing doesn't change color depending on the room it's
-// in -- but a PALE material (splitter glass, blocker slab) reads fine
-// against a dark board and nearly vanishes against a light one, so those
-// still need a theme-aware color even though they're "materials" too.
+// in -- silver and black both read fine on either background. The
+// blocker's pale slab is the exception: it needs an actual theme-aware
+// color, since "a darker version of white" isn't the same hex on paper as
+// it is on a night-dark board.
 
 const STORAGE_KEY = "lightbend-theme";
 
@@ -29,10 +30,6 @@ export const THEMES = {
     cellBorder: "rgba(255, 255, 255, 0.09)",
     snapValid: "rgba(255, 255, 255, 0.6)",
     hoverGlow: "rgba(255, 255, 255, 0.14)",
-    splitter: {
-      glass: ["#7fc4e8", "#f0fbff", "#7fc4e8"],
-      glow: "rgba(127, 196, 232, 0.6)",
-    },
     blocker: {
       top: ["#4b515c", "#2c3038"],
       edge: "rgba(255, 255, 255, 0.12)",
@@ -52,12 +49,6 @@ export const THEMES = {
     cellBorder: "rgba(33, 28, 22, 0.09)",
     snapValid: "rgba(33, 28, 22, 0.55)",
     hoverGlow: "rgba(33, 28, 22, 0.1)",
-    // The dark theme's icy near-white glass all but vanishes on paper, so
-    // it deepens into a real blue here instead of just staying pale.
-    splitter: {
-      glass: ["#1c7fa8", "#0ea5c4", "#1c7fa8"],
-      glow: "rgba(14, 133, 168, 0.4)",
-    },
     // A "darker version of white" rather than the dark theme's charcoal --
     // a pale stone slab reads as raised off paper the same way the dark
     // slab reads as raised off the night board.
