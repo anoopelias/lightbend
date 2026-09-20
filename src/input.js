@@ -1,66 +1,34 @@
 import { COLS, ROWS } from "./game_state.js";
+import { drawMirrorGlyph, drawSplitterGlyph, drawBenderGlyph } from "./draw.js";
+import { baseAngle } from "./view_state.js";
 
 const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not a click
 
-// A freshly placed tool always starts at step 0, so this icon is drawn to
-// match step 0's actual grid orientation exactly (see MIRROR_BASE_ANGLE in
-// view_state.js) -- otherwise the icon visibly snaps to a different angle
-// the instant it's dropped, reading as an unwanted rotation even though
-// none happened.
-const mirrorIconSvg = (gradId) => `
-  <svg class="tool-icon" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="${gradId}" x1="13" y1="23" x2="13" y2="1" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#7c8994" />
-        <stop offset="0.5" stop-color="#eef3f6" />
-        <stop offset="1" stop-color="#55606b" />
-      </linearGradient>
-    </defs>
-    <line x1="13" y1="1" x2="13" y2="23" stroke="url(#${gradId})" stroke-width="1.8" />
-    <line x1="11" y1="1" x2="11" y2="23" stroke="#0e1014" stroke-width="1.8" />
-  </svg>`;
+const GLYPHS = { mirror: drawMirrorGlyph, splitter: drawSplitterGlyph, bender: drawBenderGlyph };
 
-// Same reasoning as the mirror icon above -- matches step 0's actual grid
-// orientation (see SPLITTER_BASE_ANGLE in view_state.js): an "I-beam", a
-// thin silver stem with a thick black flange perpendicular to it at each
-// end. Silver rather than glass-blue reads clearly on both themes. The
-// coordinates and widths are drawSplitterGlyph's own proportions
-// (stemHalf/capHalf/capX at len=24.8, a 40px cell -- the desktop max)
-// uniformly scaled down 18% so the round stroke caps stay inside the
-// viewBox, so the palette icon reads as the same object as the one on
-// the grid instead of a differently-proportioned lookalike.
-const splitterIconSvg = (gradId) => `
-  <svg class="tool-icon" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="${gradId}" x1="2.65" y1="12" x2="21.35" y2="12" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#7c8994" />
-        <stop offset="0.5" stop-color="#eef3f6" />
-        <stop offset="1" stop-color="#55606b" />
-      </linearGradient>
-    </defs>
-    <line x1="2.65" y1="12" x2="21.35" y2="12" stroke="url(#${gradId})" stroke-width="4.1" />
-    <line x1="2.65" y1="9.76" x2="2.65" y2="14.24" stroke="#0e1014" stroke-width="2.03" stroke-linecap="round" />
-    <line x1="21.35" y1="9.76" x2="21.35" y2="14.24" stroke="#0e1014" stroke-width="2.03" stroke-linecap="round" />
-  </svg>`;
+// Renders a tool's palette icon with the exact same glyph function -- and
+// the same len = size * 0.62 relationship drawToolBase uses -- that draws
+// it on the grid, at step 0's angle (see baseAngle in view_state.js).
+// Sharing the drawing code instead of a separately hand-tuned SVG icon per
+// tool means the palette can never drift out of sync with what the tool
+// actually looks like once placed, the way it once did.
+function renderToolIcon(tool, size) {
+  const canvas = document.createElement("canvas");
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = `${size}px`;
+  canvas.style.height = `${size}px`;
+  canvas.style.display = "block";
 
-// Same reasoning as the mirror icon above -- matches step 0's actual grid
-// orientation (see BENDER_BASE_ANGLE in view_state.js), plus the classic
-// handle kicked out behind one end that tells it apart from the mirror.
-const benderIconSvg = (gradId) => `
-  <svg class="tool-icon" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="${gradId}" x1="8.7" y1="22.5" x2="17.1" y2="2.2" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#7c8994" />
-        <stop offset="0.5" stop-color="#eef3f6" />
-        <stop offset="1" stop-color="#55606b" />
-      </linearGradient>
-    </defs>
-    <polyline points="15.3,1.5 6.9,21.8 1.1,23.1" fill="none" stroke="#0e1014" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-    <line x1="8.7" y1="22.5" x2="17.1" y2="2.2" stroke="url(#${gradId})" stroke-width="1.8" />
-  </svg>`;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.translate(size / 2, size / 2);
+  ctx.rotate(baseAngle(tool.kind));
+  GLYPHS[tool.kind](ctx, size * 0.62);
 
-const toolIconSvg = (tool, gradId) =>
-  tool.kind === "splitter" ? splitterIconSvg(gradId) : tool.kind === "bender" ? benderIconSvg(gradId) : mirrorIconSvg(gradId);
+  return canvas;
+}
 
 function clampCell(col, row) {
   return {
@@ -122,7 +90,8 @@ export class DragController {
       slot.classList.remove("palette-slot--empty");
       slot.classList.add("palette-slot--filled");
       slot.title = tool.kind === "splitter" ? "Splitter" : tool.kind === "bender" ? "Bender" : "Mirror";
-      slot.innerHTML = toolIconSvg(tool, `tool-gradient-${i}`);
+      slot.innerHTML = "";
+      slot.appendChild(renderToolIcon(tool, slot.getBoundingClientRect().width)); // slot is square
       slot.onpointerdown = (e) => this.onPalettePointerDown(e, tool);
     }
     for (; i < this.paletteSlots.length; i++) {
@@ -231,7 +200,7 @@ export class DragController {
 
     const ghost = document.createElement("div");
     ghost.className = "drag-ghost";
-    ghost.innerHTML = toolIconSvg(tool, "tool-gradient-ghost");
+    ghost.appendChild(renderToolIcon(tool, slotSize));
     ghost.style.width = `${slotSize}px`;
     ghost.style.height = `${slotSize}px`;
     ghost.style.marginLeft = `${-slotSize / 2}px`;

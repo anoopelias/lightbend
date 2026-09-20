@@ -153,7 +153,7 @@ export function drawSource(board, source, time) {
 // rotation angle -- a multiple of 90 degrees from mirror.step -- that sweeps
 // it to face the right way, so there's nothing here to fall out of sync
 // with the angle mid-animation.
-function drawMirrorGlyph(ctx, len) {
+export function drawMirrorGlyph(ctx, len) {
   ctx.lineCap = "round";
 
   const half = len / 2;
@@ -186,7 +186,7 @@ function drawMirrorGlyph(ctx, len) {
 // classic look for this piece, and a silhouette that reads as different
 // from the mirror's at a glance no matter the rotation, on top of the
 // 22.5deg the caller already offsets it by.
-function drawBenderGlyph(ctx, len) {
+export function drawBenderGlyph(ctx, len) {
   ctx.lineCap = "round";
 
   const half = len / 2;
@@ -217,7 +217,7 @@ function drawBenderGlyph(ctx, len) {
 // shading like the mirror's, just the two end caps. Silver rather than
 // glass-blue reads clearly on both themes without a separate light-theme
 // color, the same as the mirror and bender's face.
-function drawSplitterGlyph(ctx, len) {
+export function drawSplitterGlyph(ctx, len) {
   ctx.lineCap = "round";
 
   const stemHalf = len * 0.46;

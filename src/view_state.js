@@ -19,7 +19,7 @@ const MIRROR_BASE_ANGLE = Math.PI / 2;
 const SPLITTER_BASE_ANGLE = 0;
 const BENDER_BASE_ANGLE = Math.PI / 2 + Math.PI / 8;
 
-function baseAngle(kind) {
+export function baseAngle(kind) {
   if (kind === "splitter") return SPLITTER_BASE_ANGLE;
   if (kind === "bender") return BENDER_BASE_ANGLE;
   return MIRROR_BASE_ANGLE;

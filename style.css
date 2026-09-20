@@ -303,17 +303,6 @@ body {
   cursor: default;
 }
 
-.palette-slot--empty .tool-icon {
-  opacity: 0;
-}
-
-.tool-icon {
-  width: 22px;
-  height: 22px;
-  stroke-linecap: round;
-  fill: none;
-}
-
 .drag-ghost {
   position: fixed;
   top: 0;
