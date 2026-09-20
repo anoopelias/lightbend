@@ -114,7 +114,48 @@ export const LEVELS = [
     splitterCount: 2,
     benderCount: 1,
   },
+  {
+    sources: [{ col: 0, row: 1, dir: "right", color: "red" }],
+    targets: [
+      { col: 12, row: 1, color: "red" },
+      { col: 12, row: 2, color: "red" },
+      { col: 11, row: 13, color: "red" },
+      { col: 7, row: 14, color: "red" },
+      { col: 2, row: 5, color: "red" },
+      { col: 7, row: 5, color: "red" },
+      { col: 10, row: 8, color: "red" },
+      { col: 12, row: 9, color: "red" },
+    ],
+    // A spiral wall, wound from the outside in.
+    blockers: [
+      ...rowRange(3, 0, 11),
+      ...colRange(11, 4, 12),
+      ...rowRange(12, 2, 10),
+      ...colRange(2, 6, 11),
+      ...rowRange(6, 3, 8),
+      ...colRange(8, 7, 10),
+      ...rowRange(10, 4, 7),
+      ...colRange(4, 8, 9),
+      ...rowRange(8, 5, 6),
+    ],
+    mirrorCount: 1,
+    benderCount: 18,
+  },
 ];
+
+// Every cell from col `c1` to `c2` (inclusive) along a single row.
+function rowRange(row, c1, c2) {
+  const cells = [];
+  for (let col = c1; col <= c2; col++) cells.push({ col, row });
+  return cells;
+}
+
+// Every cell from row `r1` to `r2` (inclusive) down a single column.
+function colRange(col, r1, r2) {
+  const cells = [];
+  for (let row = r1; row <= r2; row++) cells.push({ col, row });
+  return cells;
+}
 
 // Every cell along the outer ring of a `size`x`size` grid.
 function borderCells(size) {
