@@ -1,17 +1,7 @@
 import { COLS, ROWS, DIRS } from "./game_state.js";
+import { getTheme } from "./theme.js";
 
 // ---------- Drawing (pure: reads entities + transient view, writes to canvas) ----------
-
-// RGB light colors and their combinations
-const LIGHT = {
-  red: { core: "#ff8a80", mid: "#ff3d3d", glow: "255, 61, 61" },
-  green: { core: "#8ef5c0", mid: "#22c55e", glow: "34, 197, 94" },
-  blue: { core: "#8ab4ff", mid: "#3b82f6", glow: "59, 130, 246" },
-  yellow: { core: "#fff08a", mid: "#eab308", glow: "234, 179, 8" },
-  cyan: { core: "#8af5f0", mid: "#06b6d4", glow: "6, 182, 212" },
-  magenta: { core: "#ff8ae0", mid: "#d946ef", glow: "217, 70, 239" },
-  white: { core: "#ffffff", mid: "#e2e8f0", glow: "226, 232, 240" },
-};
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -25,13 +15,14 @@ function roundRect(ctx, x, y, w, h, r) {
 
 export function drawCells(board) {
   const { ctx, cellRect } = board;
+  const theme = getTheme();
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
       const r = cellRect(col, row);
       roundRect(ctx, r.x, r.y, r.w, r.h, 4);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.045)";
+      ctx.fillStyle = theme.cell;
       ctx.fill();
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+      ctx.strokeStyle = theme.cellBorder;
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -110,7 +101,7 @@ export function drawSource(board, source, time) {
   const { ctx, cellCenter } = board;
   const c = cellCenter(source.col, source.row);
   const pulse = 1 + 0.08 * Math.sin(time / 260);
-  const color = LIGHT[source.color];
+  const color = getTheme().beam[source.color];
   const dir = DIRS[source.dir];
   const angle = Math.atan2(dir.y, dir.x);
 
@@ -262,7 +253,7 @@ export function drawSnapTarget(board, view, valid) {
 
   ctx.save();
   ctx.setLineDash([4, 4]);
-  ctx.strokeStyle = valid ? "rgba(255, 255, 255, 0.6)" : "rgba(255, 90, 90, 0.7)";
+  ctx.strokeStyle = valid ? getTheme().snapValid : "rgba(255, 90, 90, 0.7)";
   ctx.lineWidth = 2;
   roundRect(ctx, r.x, r.y, r.w, r.h, 4);
   ctx.stroke();
@@ -288,7 +279,7 @@ function drawToolBase(board, tool, view, glyph) {
   } else if (view.hovering) {
     const c = cellCenter(tool.col, tool.row);
     const glow = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, cellSize * 0.5);
-    glow.addColorStop(0, "rgba(255, 255, 255, 0.14)");
+    glow.addColorStop(0, getTheme().hoverGlow);
     glow.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = glow;
     ctx.beginPath();
@@ -323,7 +314,7 @@ export function drawTarget(board, target, view, time, hit) {
   const { ctx, cellCenter } = board;
   const c = cellCenter(target.col, target.row);
   const baseRadius = 8;
-  const color = LIGHT[target.color];
+  const color = getTheme().beam[target.color];
 
   if (hit) {
     const pulse = 1 + 0.12 * Math.sin(time / 200);
@@ -371,7 +362,7 @@ export function drawTarget(board, target, view, time, hit) {
 export function drawBeam(board, points, color, time) {
   const { ctx } = board;
   const flicker = 0.85 + 0.15 * Math.sin(time / 90);
-  const light = LIGHT[color];
+  const light = getTheme().beam[color];
 
   ctx.save();
   ctx.lineJoin = "round";

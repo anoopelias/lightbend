@@ -16,6 +16,7 @@ import {
 import { DragController } from "./input.js";
 import { ViewState } from "./view_state.js";
 import { clearProgress } from "./storage.js";
+import { getThemeName, toggleTheme } from "./theme.js";
 
 const state = new GameState();
 
@@ -31,7 +32,24 @@ const nextLevelBtn = document.getElementById("next-level");
 const prevLevelBtn = document.getElementById("prev-level");
 const levelSelect = document.getElementById("level-select");
 const resetBtn = document.getElementById("reset-progress");
+const themeToggleBtn = document.getElementById("theme-toggle");
 const paletteSlotEls = Array.from(document.querySelectorAll(".palette-slot"));
+
+// Shows the theme the button switches *to*, not the current one -- a moon
+// invites you into the dark, a sun invites you back out.
+function syncThemeToggle() {
+  const isDark = getThemeName() === "dark";
+  themeToggleBtn.textContent = isDark ? "☀️" : "🌙";
+  themeToggleBtn.title = isDark ? "Switch to light theme" : "Switch to dark theme";
+  themeToggleBtn.setAttribute("aria-label", themeToggleBtn.title);
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  toggleTheme();
+  syncThemeToggle();
+});
+
+syncThemeToggle();
 
 // Keeps each palette slot the same pixel size as a single grid cell, so the
 // palette reads as "cut from the same grid" at any viewport size instead of
