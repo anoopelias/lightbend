@@ -36,7 +36,7 @@ export function drawBlocker(board, blocker) {
   const { ctx, cellRect } = board;
   const r = cellRect(blocker.col, blocker.row);
   const inset = Math.max(1, r.w * 0.06);
-  const lift = Math.max(1, r.w * 0.05);
+  const lift = Math.max(1, r.w * 0.035);
   const x = r.x + inset;
   const y = r.y + inset;
   const w = r.w - inset * 2;
@@ -44,7 +44,7 @@ export function drawBlocker(board, blocker) {
   const { top, edge } = getTheme().blocker;
 
   roundRect(ctx, x, y + lift, w, h, 3);
-  ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.13)";
   ctx.fill();
 
   roundRect(ctx, x, y, w, h - lift, 3);
