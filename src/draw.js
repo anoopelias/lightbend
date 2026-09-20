@@ -87,14 +87,14 @@ export function drawConduit(board, conduit) {
   ctx.lineCap = "round";
 
   ctx.strokeStyle = "#0e1014";
-  ctx.lineWidth = r.w * 0.14;
+  ctx.lineWidth = r.w * 0.09;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
 
-  ctx.strokeStyle = "rgba(214, 224, 232, 0.55)";
-  ctx.lineWidth = r.w * 0.03;
+  ctx.strokeStyle = "rgba(214, 224, 232, 0.7)";
+  ctx.lineWidth = r.w * 0.05;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
