@@ -229,7 +229,7 @@ function drawSplitterGlyph(ctx, len) {
   grad.addColorStop(0.5, "#eef3f6");
   grad.addColorStop(1, "#55606b");
   ctx.strokeStyle = grad;
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 5;
   ctx.shadowColor = "rgba(180, 190, 200, 0.5)";
   ctx.shadowBlur = 5;
   ctx.beginPath();
@@ -239,7 +239,7 @@ function drawSplitterGlyph(ctx, len) {
   ctx.shadowBlur = 0;
 
   ctx.strokeStyle = "#0e1014";
-  ctx.lineWidth = len * 0.14;
+  ctx.lineWidth = len * 0.1;
   for (const x of [-capX, capX]) {
     ctx.beginPath();
     ctx.moveTo(x, -capHalf);
