@@ -6,6 +6,12 @@ const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not
 
 const GLYPHS = { mirror: drawMirrorGlyph, splitter: drawSplitterGlyph, bender: drawBenderGlyph };
 
+// The palette's footprint stays the same across every level -- sized to
+// comfortably fit the largest level's tool count (Level 10 needs 19) --
+// rather than growing or shrinking as you move between levels.
+const PALETTE_COLUMNS = 5;
+const PALETTE_ROWS = 4;
+
 // Renders a tool's palette icon with the exact same glyph function -- and
 // the same len = size * 0.62 relationship drawToolBase uses -- that draws
 // it on the grid, at step 0's angle (see baseAngle in view_state.js).
@@ -62,22 +68,15 @@ export class DragController {
     this.canvas.addEventListener("pointerup", this.onGridPointerUp);
     this.canvas.addEventListener("pointercancel", this.onGridPointerCancel);
 
-    this.rebuildPaletteSlots();
+    this.buildPaletteSlots();
     this.syncPalette();
   }
 
-  // Rebuilds the palette's grid to fit this level's tool count, sized
-  // roughly square (at least 3 columns, matching the palette's original
-  // fixed size) rather than a fixed 3x3 that would overflow once a level
-  // needs more than 9 tools at once. Call whenever the level (and so the
-  // tool count) changes, before syncPalette().
-  rebuildPaletteSlots() {
-    const count = this.state.tools.length;
-    const columns = Math.max(3, Math.ceil(Math.sqrt(count)));
-    const rows = Math.max(1, Math.ceil(count / columns));
-    this.paletteEl.style.setProperty("--palette-columns", columns);
+  // Builds the palette's fixed grid once -- see PALETTE_COLUMNS/ROWS above.
+  buildPaletteSlots() {
+    this.paletteEl.style.setProperty("--palette-columns", PALETTE_COLUMNS);
     this.paletteEl.innerHTML = "";
-    this.paletteSlots = Array.from({ length: columns * rows }, () => {
+    this.paletteSlots = Array.from({ length: PALETTE_COLUMNS * PALETTE_ROWS }, () => {
       const slot = document.createElement("div");
       slot.className = "palette-slot palette-slot--empty";
       this.paletteEl.appendChild(slot);

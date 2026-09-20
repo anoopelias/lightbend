@@ -80,10 +80,7 @@ syncThemeToggle();
 // Keeps each palette slot the same pixel size as a single grid cell, so the
 // palette reads as "cut from the same grid" at any viewport size instead of
 // using its own fixed size (which looked oversized next to a shrunk mobile
-// board, or mismatched next to a shrunk desktop one). Queried fresh each
-// call rather than cached, since DragController.rebuildPaletteSlots()
-// replaces the slot elements whenever the level (and so the tool count)
-// changes.
+// board, or mismatched next to a shrunk desktop one).
 function syncPaletteSlotSize() {
   const size = `${board.cellSize}px`;
   for (const slot of document.querySelectorAll(".palette-slot")) {
@@ -116,9 +113,7 @@ function syncLevelSelect() {
 function afterLevelChange() {
   view.loadLevel(state);
   dragController.views = view.toolViews;
-  dragController.rebuildPaletteSlots();
   dragController.syncPalette();
-  syncPaletteSlotSize();
   syncLevelSelect();
 }
 
