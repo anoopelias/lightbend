@@ -272,7 +272,9 @@ body {
 
 .palette {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Set per level (as few as 3, as many as a level's tool count needs) by
+     DragController.rebuildPaletteSlots(). */
+  grid-template-columns: repeat(var(--palette-columns, 3), 1fr);
   gap: 0;
   flex-shrink: 0;
   padding: 10px;

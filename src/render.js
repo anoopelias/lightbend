@@ -33,7 +33,6 @@ const prevLevelBtn = document.getElementById("prev-level");
 const levelSelect = document.getElementById("level-select");
 const resetBtn = document.getElementById("reset-progress");
 const themeToggleBtn = document.getElementById("theme-toggle");
-const paletteSlotEls = Array.from(document.querySelectorAll(".palette-slot"));
 
 // Hand-drawn rather than emoji -- an emoji glyph's shape and weight are up
 // to whatever font the OS picks, which is exactly what left the crescent
@@ -81,21 +80,24 @@ syncThemeToggle();
 // Keeps each palette slot the same pixel size as a single grid cell, so the
 // palette reads as "cut from the same grid" at any viewport size instead of
 // using its own fixed size (which looked oversized next to a shrunk mobile
-// board, or mismatched next to a shrunk desktop one).
+// board, or mismatched next to a shrunk desktop one). Queried fresh each
+// call rather than cached, since DragController.rebuildPaletteSlots()
+// replaces the slot elements whenever the level (and so the tool count)
+// changes.
 function syncPaletteSlotSize() {
   const size = `${board.cellSize}px`;
-  for (const slot of paletteSlotEls) {
+  for (const slot of document.querySelectorAll(".palette-slot")) {
     slot.style.width = size;
     slot.style.height = size;
   }
 }
 
-syncPaletteSlotSize();
 window.addEventListener("resize", syncPaletteSlotSize);
 window.addEventListener("orientationchange", syncPaletteSlotSize);
 
 const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });
+syncPaletteSlotSize(); // size the slots DragController just created for the initial level
 
 // Rebuilds the dropdown's options -- only levels reached so far are
 // selectable -- and syncs its value to the current level.
@@ -114,7 +116,9 @@ function syncLevelSelect() {
 function afterLevelChange() {
   view.loadLevel(state);
   dragController.views = view.toolViews;
+  dragController.rebuildPaletteSlots();
   dragController.syncPalette();
+  syncPaletteSlotSize();
   syncLevelSelect();
 }
 

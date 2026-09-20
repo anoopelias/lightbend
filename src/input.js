@@ -50,7 +50,8 @@ export class DragController {
     this.pixelToCell = board.pixelToCell;
     this.state = state;
     this.views = views;
-    this.paletteSlots = Array.from(document.querySelectorAll(".palette-slot"));
+    this.paletteEl = document.querySelector(".palette");
+    this.paletteSlots = [];
 
     this.pointerDownCell = null;
     this.pointerDownClient = null;
@@ -61,7 +62,27 @@ export class DragController {
     this.canvas.addEventListener("pointerup", this.onGridPointerUp);
     this.canvas.addEventListener("pointercancel", this.onGridPointerCancel);
 
+    this.rebuildPaletteSlots();
     this.syncPalette();
+  }
+
+  // Rebuilds the palette's grid to fit this level's tool count, sized
+  // roughly square (at least 3 columns, matching the palette's original
+  // fixed size) rather than a fixed 3x3 that would overflow once a level
+  // needs more than 9 tools at once. Call whenever the level (and so the
+  // tool count) changes, before syncPalette().
+  rebuildPaletteSlots() {
+    const count = this.state.tools.length;
+    const columns = Math.max(3, Math.ceil(Math.sqrt(count)));
+    const rows = Math.max(1, Math.ceil(count / columns));
+    this.paletteEl.style.setProperty("--palette-columns", columns);
+    this.paletteEl.innerHTML = "";
+    this.paletteSlots = Array.from({ length: columns * rows }, () => {
+      const slot = document.createElement("div");
+      slot.className = "palette-slot palette-slot--empty";
+      this.paletteEl.appendChild(slot);
+      return slot;
+    });
   }
 
   eventToCanvasPoint(e) {

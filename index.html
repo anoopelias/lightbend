@@ -15,17 +15,9 @@
 
     <div class="board-column">
       <div class="board-toolbar">
-        <div class="palette">
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-          <div class="palette-slot palette-slot--empty"></div>
-        </div>
+        <!-- Slots are generated in JS (DragController.rebuildPaletteSlots),
+             sized to fit each level's own tool count. -->
+        <div class="palette"></div>
 
         <div class="level-controls">
           <button id="theme-toggle" class="reset-btn" title="Switch theme" aria-label="Switch theme"></button>
