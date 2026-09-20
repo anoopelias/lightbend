@@ -38,10 +38,13 @@ const paletteSlotEls = Array.from(document.querySelectorAll(".palette-slot"));
 // Hand-drawn rather than emoji -- an emoji glyph's shape and weight are up
 // to whatever font the OS picks, which is exactly what left the crescent
 // moon pale and the "new moon" disc unrecognizable as a moon at all.
-// `currentColor` ties each icon to the button's own (theme-driven) ink
-// color, so contrast is never in question either.
+// `currentColor` ties the moon to the button's own (theme-driven) ink
+// color, so its contrast is never in question. The sun instead takes the
+// app's own warm accent plus a soft drop-shadow glow, echoing the same
+// glow already used on the logo and the next-level button, rather than
+// reading as just another flat ink-colored icon.
 const SUN_ICON = `
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9f1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 3px rgba(255, 159, 28, 0.85))">
     <circle cx="12" cy="12" r="4" />
     <line x1="12" y1="2" x2="12" y2="4" />
     <line x1="12" y1="20" x2="12" y2="22" />
