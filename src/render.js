@@ -36,10 +36,13 @@ const themeToggleBtn = document.getElementById("theme-toggle");
 const paletteSlotEls = Array.from(document.querySelectorAll(".palette-slot"));
 
 // Shows the theme the button switches *to*, not the current one -- a moon
-// invites you into the dark, a sun invites you back out.
+// invites you into the dark, a sun invites you back out. A crescent moon
+// renders pale on most systems and nearly disappears against the light
+// theme's own background, so this reaches for the solid new-moon disc
+// instead.
 function syncThemeToggle() {
   const isDark = getThemeName() === "dark";
-  themeToggleBtn.textContent = isDark ? "☀️" : "🌙";
+  themeToggleBtn.textContent = isDark ? "☀️" : "🌑";
   themeToggleBtn.title = isDark ? "Switch to light theme" : "Switch to dark theme";
   themeToggleBtn.setAttribute("aria-label", themeToggleBtn.title);
 }
@@ -47,6 +50,7 @@ function syncThemeToggle() {
 themeToggleBtn.addEventListener("click", () => {
   toggleTheme();
   syncThemeToggle();
+  dragController.syncPalette(); // palette icons carry theme colors of their own (e.g. splitter glass)
 });
 
 syncThemeToggle();

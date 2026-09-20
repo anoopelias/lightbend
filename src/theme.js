@@ -1,13 +1,12 @@
 // ---------- Theme (light/dark) ----------
 //
-// Covers only what the canvas draws that the CSS custom properties in
-// style.css can't reach -- beam/target colors, grid cell fill, the
-// drag-snap outline, and the tool hover glow. Materials (mirror/bender
-// backing, splitter glass,
-// blocker slab, conduit bar, tool housings) are deliberately absent here --
-// they're drawn with fixed colors in draw.js and never change with the
-// theme, the way a real mirror's backing doesn't change color depending on
-// the room it's in.
+// Covers everything the canvas draws that CSS custom properties can't
+// reach. Dark materials (mirror/bender backing, conduit bar, tool
+// housings) are fixed in draw.js and never change with the theme, the way
+// a real mirror's backing doesn't change color depending on the room it's
+// in -- but a PALE material (splitter glass, blocker slab) reads fine
+// against a dark board and nearly vanishes against a light one, so those
+// still need a theme-aware color even though they're "materials" too.
 
 const STORAGE_KEY = "lightbend-theme";
 
@@ -30,6 +29,14 @@ export const THEMES = {
     cellBorder: "rgba(255, 255, 255, 0.09)",
     snapValid: "rgba(255, 255, 255, 0.6)",
     hoverGlow: "rgba(255, 255, 255, 0.14)",
+    splitter: {
+      glass: ["#7fc4e8", "#f0fbff", "#7fc4e8"],
+      glow: "rgba(127, 196, 232, 0.6)",
+    },
+    blocker: {
+      top: ["#4b515c", "#2c3038"],
+      edge: "rgba(255, 255, 255, 0.12)",
+    },
     beam: {
       red: { core: CORE.red, mid: "#ff3d3d", glow: "255, 61, 61" },
       green: { core: CORE.green, mid: "#22c55e", glow: "34, 197, 94" },
@@ -45,6 +52,19 @@ export const THEMES = {
     cellBorder: "rgba(33, 28, 22, 0.09)",
     snapValid: "rgba(33, 28, 22, 0.55)",
     hoverGlow: "rgba(33, 28, 22, 0.1)",
+    // The dark theme's icy near-white glass all but vanishes on paper, so
+    // it deepens into a real blue here instead of just staying pale.
+    splitter: {
+      glass: ["#1c7fa8", "#0ea5c4", "#1c7fa8"],
+      glow: "rgba(14, 133, 168, 0.4)",
+    },
+    // A "darker version of white" rather than the dark theme's charcoal --
+    // a pale stone slab reads as raised off paper the same way the dark
+    // slab reads as raised off the night board.
+    blocker: {
+      top: ["#eeeae0", "#d3cdbd"],
+      edge: "rgba(33, 28, 22, 0.15)",
+    },
     // Beams rely on translucency reading against the board -- the same
     // alpha that glows nicely on a dark board washes out on paper, so
     // every "mid"/"glow" pair shifts darker and more saturated here.

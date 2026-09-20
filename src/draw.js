@@ -41,6 +41,7 @@ export function drawBlocker(board, blocker) {
   const y = r.y + inset;
   const w = r.w - inset * 2;
   const h = r.h - inset * 2;
+  const { top, edge } = getTheme().blocker;
 
   roundRect(ctx, x, y + lift, w, h, 3);
   ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
@@ -48,11 +49,11 @@ export function drawBlocker(board, blocker) {
 
   roundRect(ctx, x, y, w, h - lift, 3);
   const grad = ctx.createLinearGradient(x, y, x, y + h - lift);
-  grad.addColorStop(0, "#4b515c");
-  grad.addColorStop(1, "#2c3038");
+  grad.addColorStop(0, top[0]);
+  grad.addColorStop(1, top[1]);
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  ctx.strokeStyle = edge;
   ctx.lineWidth = 1;
   ctx.stroke();
 }
@@ -221,13 +222,14 @@ function drawSplitterGlyph(ctx, len) {
   const capX = len * 0.46;
   const capHalf = len * 0.11;
 
+  const { glass, glow } = getTheme().splitter;
   const grad = ctx.createLinearGradient(-stemHalf, 0, stemHalf, 0);
-  grad.addColorStop(0, "#7fc4e8");
-  grad.addColorStop(0.5, "#f0fbff");
-  grad.addColorStop(1, "#7fc4e8");
+  grad.addColorStop(0, glass[0]);
+  grad.addColorStop(0.5, glass[1]);
+  grad.addColorStop(1, glass[2]);
   ctx.strokeStyle = grad;
-  ctx.lineWidth = 2.4;
-  ctx.shadowColor = "rgba(127, 196, 232, 0.6)";
+  ctx.lineWidth = 2.8;
+  ctx.shadowColor = glow;
   ctx.shadowBlur = 5;
   ctx.beginPath();
   ctx.moveTo(-stemHalf, 0);

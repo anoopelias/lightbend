@@ -1,4 +1,5 @@
 import { COLS, ROWS } from "./game_state.js";
+import { getTheme } from "./theme.js";
 
 const DRAG_THRESHOLD = 4; // px of movement before a press counts as a drag, not a click
 
@@ -24,19 +25,22 @@ const mirrorIconSvg = (gradId) => `
 // orientation (see SPLITTER_BASE_ANGLE in view_state.js): an "I-beam", a
 // thin horizontal stem with a thick black flange perpendicular to it at
 // each end.
-const splitterIconSvg = (gradId) => `
+const splitterIconSvg = (gradId) => {
+  const [a, b, c] = getTheme().splitter.glass;
+  return `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
       <linearGradient id="${gradId}" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#bfe9ff" />
-        <stop offset="0.5" stop-color="#f0fbff" />
-        <stop offset="1" stop-color="#7fc4e8" />
+        <stop offset="0" stop-color="${a}" />
+        <stop offset="0.5" stop-color="${b}" />
+        <stop offset="1" stop-color="${c}" />
       </linearGradient>
     </defs>
-    <line x1="2" y1="12" x2="22" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
+    <line x1="2" y1="12" x2="22" y2="12" stroke="url(#${gradId})" stroke-width="2.6" />
     <line x1="2" y1="9" x2="2" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
     <line x1="22" y1="9" x2="22" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
   </svg>`;
+};
 
 // Same reasoning as the mirror icon above -- matches step 0's actual grid
 // orientation (see BENDER_BASE_ANGLE in view_state.js), plus the classic
