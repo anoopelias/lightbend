@@ -22,20 +22,25 @@ const mirrorIconSvg = (gradId) => `
 
 // Same reasoning as the mirror icon above -- matches step 0's actual grid
 // orientation (see SPLITTER_BASE_ANGLE in view_state.js): an "I-beam", a
-// thin horizontal stem with a thick black flange perpendicular to it at
-// each end.
+// thin silver stem with a thick black flange perpendicular to it at each
+// end. Silver rather than glass-blue reads clearly on both themes. The
+// coordinates and widths are drawSplitterGlyph's own proportions
+// (stemHalf/capHalf/capX at len=24.8, a 40px cell -- the desktop max)
+// uniformly scaled down 18% so the round stroke caps stay inside the
+// viewBox, so the palette icon reads as the same object as the one on
+// the grid instead of a differently-proportioned lookalike.
 const splitterIconSvg = (gradId) => `
   <svg class="tool-icon" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="${gradId}" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#bfe9ff" />
-        <stop offset="0.5" stop-color="#f0fbff" />
-        <stop offset="1" stop-color="#7fc4e8" />
+      <linearGradient id="${gradId}" x1="2.65" y1="12" x2="21.35" y2="12" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#7c8994" />
+        <stop offset="0.5" stop-color="#eef3f6" />
+        <stop offset="1" stop-color="#55606b" />
       </linearGradient>
     </defs>
-    <line x1="2" y1="12" x2="22" y2="12" stroke="url(#${gradId})" stroke-width="2.2" />
-    <line x1="2" y1="9" x2="2" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
-    <line x1="22" y1="9" x2="22" y2="15" stroke="#0e1014" stroke-width="3.8" stroke-linecap="round" />
+    <line x1="2.65" y1="12" x2="21.35" y2="12" stroke="url(#${gradId})" stroke-width="4.1" />
+    <line x1="2.65" y1="9.76" x2="2.65" y2="14.24" stroke="#0e1014" stroke-width="2.03" stroke-linecap="round" />
+    <line x1="21.35" y1="9.76" x2="21.35" y2="14.24" stroke="#0e1014" stroke-width="2.03" stroke-linecap="round" />
   </svg>`;
 
 // Same reasoning as the mirror icon above -- matches step 0's actual grid
