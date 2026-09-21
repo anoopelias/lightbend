@@ -15,8 +15,8 @@ import {
 } from "./draw.js";
 import { DragController } from "./input.js";
 import { ViewState } from "./view_state.js";
-import { clearProgress } from "./storage.js";
-import { getThemeName, toggleTheme } from "./theme.js";
+import { setupThemeToggle } from "./theme_toggle.js";
+import { createLevelNav } from "./level_nav.js";
 
 const state = new GameState();
 
@@ -27,55 +27,6 @@ const board = new Board({
   wrapEl: document.querySelector(".wrap"),
   shellEl: document.querySelector(".board-shell"),
 });
-
-const nextLevelBtn = document.getElementById("next-level");
-const prevLevelBtn = document.getElementById("prev-level");
-const levelSelect = document.getElementById("level-select");
-const resetBtn = document.getElementById("reset-progress");
-const themeToggleBtn = document.getElementById("theme-toggle");
-
-// Hand-drawn rather than emoji -- an emoji glyph's shape and weight are up
-// to whatever font the OS picks, which is exactly what left the crescent
-// moon pale and the "new moon" disc unrecognizable as a moon at all.
-// `currentColor` ties the moon to the button's own (theme-driven) ink
-// color, so its contrast is never in question. The sun instead takes the
-// app's own warm accent plus a soft drop-shadow glow, echoing the same
-// glow already used on the logo and the next-level button, rather than
-// reading as just another flat ink-colored icon.
-const SUN_ICON = `
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9f1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 3px rgba(255, 159, 28, 0.85))">
-    <circle cx="12" cy="12" r="4" />
-    <line x1="12" y1="2" x2="12" y2="4" />
-    <line x1="12" y1="20" x2="12" y2="22" />
-    <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" />
-    <line x1="17.66" y1="17.66" x2="19.07" y2="19.07" />
-    <line x1="2" y1="12" x2="4" y2="12" />
-    <line x1="20" y1="12" x2="22" y2="12" />
-    <line x1="4.93" y1="19.07" x2="6.34" y2="17.66" />
-    <line x1="17.66" y1="6.34" x2="19.07" y2="4.93" />
-  </svg>`;
-
-const MOON_ICON = `
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>`;
-
-// Shows the theme the button switches *to*, not the current one -- a moon
-// invites you into the dark, a sun invites you back out.
-function syncThemeToggle() {
-  const isDark = getThemeName() === "dark";
-  themeToggleBtn.innerHTML = isDark ? SUN_ICON : MOON_ICON;
-  themeToggleBtn.title = isDark ? "Switch to light theme" : "Switch to dark theme";
-  themeToggleBtn.setAttribute("aria-label", themeToggleBtn.title);
-}
-
-themeToggleBtn.addEventListener("click", () => {
-  toggleTheme();
-  syncThemeToggle();
-  dragController.syncPalette(); // palette icons carry theme colors of their own (e.g. splitter glass)
-});
-
-syncThemeToggle();
 
 // Keeps each palette slot the same pixel size as a single grid cell, so the
 // palette reads as "cut from the same grid" at any viewport size instead of
@@ -96,51 +47,8 @@ const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });
 syncPaletteSlotSize(); // size the slots DragController just created for the initial level
 
-// Rebuilds the dropdown's options -- only levels reached so far are
-// selectable -- and syncs its value to the current level.
-function syncLevelSelect() {
-  levelSelect.innerHTML = "";
-  for (let i = 0; i < state.levelCount; i++) {
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent = `Level ${i + 1}`;
-    option.disabled = i > state.maxLevelReached;
-    levelSelect.appendChild(option);
-  }
-  levelSelect.value = state.levelIndex;
-}
-
-function afterLevelChange() {
-  view.loadLevel(state);
-  dragController.views = view.toolViews;
-  dragController.syncPalette();
-  syncLevelSelect();
-}
-
-nextLevelBtn.addEventListener("click", () => {
-  state.nextLevel();
-  afterLevelChange();
-});
-
-prevLevelBtn.addEventListener("click", () => {
-  state.prevLevel();
-  afterLevelChange();
-});
-
-levelSelect.addEventListener("change", () => {
-  state.goToLevel(Number(levelSelect.value));
-  afterLevelChange();
-});
-
-resetBtn.addEventListener("click", () => {
-  if (window.confirm("Clear saved progress? This resets every level back to blank.")) {
-    clearProgress();
-    window.location.reload();
-  }
-});
-
-syncLevelSelect();
-let wasSolved = false;
+setupThemeToggle(document.getElementById("theme-toggle"), () => dragController.syncPalette());
+const levelNav = createLevelNav({ state, view, dragController });
 
 // ---------- Animation loop ----------
 function tick(time) {
@@ -148,20 +56,7 @@ function tick(time) {
 
   const { beams, hitTargets } = state.computeBeams();
   view.updateRipples(state.targets, hitTargets, time);
-
-  const solved = state.targets.length > 0 && state.targets.every((t) => hitTargets.has(t));
-  if (solved && !wasSolved && state.hasNextLevel) {
-    state.reachLevel(state.levelIndex + 1);
-    syncLevelSelect();
-  }
-  wasSolved = solved;
-
-  const allComplete = solved && !state.hasNextLevel;
-  nextLevelBtn.disabled = !(solved && state.hasNextLevel);
-  nextLevelBtn.textContent = allComplete ? "✓" : "→";
-  nextLevelBtn.title = allComplete ? "All levels complete" : "Next level";
-  nextLevelBtn.classList.toggle("next-level-btn--complete", allComplete);
-  prevLevelBtn.disabled = !state.hasPrevLevel;
+  levelNav.updateForFrame(hitTargets);
 
   const draggingView = view.draggingToolView;
   const snapValid =
