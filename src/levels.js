@@ -170,8 +170,8 @@ export const LEVELS = [
   },
   {
     sources: [
-      { col: 1, row: 9, dir: "right", color: "blue" },
-      { col: 12, row: 5, dir: "left", color: "red" },
+      { col: 1, row: 9, dir: "right", color: "red" },
+      { col: 12, row: 5, dir: "left", color: "blue" },
     ],
     targets: [
       { col: 3, row: 6, color: "red" },
