@@ -142,6 +142,32 @@ export const LEVELS = [
     mirrorCount: 1,
     benderCount: 18,
   },
+  {
+    sources: [
+      { col: 1, row: 7, dir: "right", color: "red" },
+      { col: 13, row: 8, dir: "left", color: "green" },
+    ],
+    targets: [
+      { col: 4, row: 2, color: "red" },
+      { col: 10, row: 2, color: "green" },
+    ],
+    blockers: [
+      ...rowRange(1, 3, 11),
+      ...rowRange(2, 3, 3),
+      ...rowRange(2, 5, 9),
+      ...rowRange(2, 11, 11),
+      ...rowRange(3, 3, 4),
+      ...rowRange(3, 6, 8),
+      ...rowRange(3, 10, 11),
+      ...rowRange(4, 3, 5),
+      ...rowRange(4, 7, 7),
+      ...rowRange(4, 9, 11),
+      ...rowRange(5, 3, 6),
+      ...rowRange(5, 8, 11),
+    ],
+    mirrorCount: 3,
+    benderCount: 1,
+  },
 ];
 
 // Every cell from col `c1` to `c2` (inclusive) along a single row.
