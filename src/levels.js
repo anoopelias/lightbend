@@ -168,6 +168,22 @@ export const LEVELS = [
     mirrorCount: 3,
     benderCount: 1,
   },
+  {
+    sources: [
+      { col: 1, row: 9, dir: "right", color: "red" },
+      { col: 12, row: 5, dir: "left", color: "blue" },
+    ],
+    targets: [
+      { col: 3, row: 6, color: "red" },
+      { col: 11, row: 9, color: "red" },
+      { col: 5, row: 11, color: "red" },
+      { col: 5, row: 5, color: "blue" },
+      { col: 10, row: 6, color: "blue" },
+      { col: 9, row: 10, color: "blue" },
+    ],
+    mirrorCount: 1,
+    splitterCount: 3,
+  },
 ];
 
 // Every cell from col `c1` to `c2` (inclusive) along a single row.
