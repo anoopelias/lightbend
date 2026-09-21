@@ -179,7 +179,7 @@ export const LEVELS = [
       { col: 5, row: 11, color: "red" },
       { col: 5, row: 5, color: "blue" },
       { col: 10, row: 6, color: "blue" },
-      { col: 9, row: 10, color: "blue" },
+      { col: 8, row: 10, color: "blue" },
     ],
     mirrorCount: 1,
     splitterCount: 3,
