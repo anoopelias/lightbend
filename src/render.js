@@ -176,14 +176,22 @@ function tick(time) {
   if (draggingView) drawSnapTarget(board, draggingView, snapValid);
 
   computeBeamEdges(beams).forEach(({ from, to, color }) => {
-    const fromPt = board.cellCenter(from.col, from.row);
+    let fromPt = board.cellCenter(from.col, from.row);
     let toPt = board.cellCenter(to.col, to.row);
+    // A blocker's platform fills its whole cell, so the beam should stop at
+    // its near edge instead of visually boring into the middle. Runs are
+    // normalized (for merging same-color edges) to always point from the
+    // lower column/row toward the higher one, regardless of which way the
+    // beam actually travelled -- so the blocked cell can end up labelled
+    // either `to` (travelling up/right into it) or `from` (down/left), and
+    // both need checking, with the shift direction flipped for `from`.
+    const dx = Math.sign(to.col - from.col);
+    const dy = Math.sign(to.row - from.row);
     if (state.blockers.some((b) => b.col === to.col && b.row === to.row)) {
-      // A blocker's platform fills its whole cell, so the beam should stop
-      // at its near edge instead of visually boring into the middle.
-      const dx = Math.sign(to.col - from.col);
-      const dy = Math.sign(to.row - from.row);
       toPt = { x: toPt.x - (dx * board.cellSize) / 2, y: toPt.y - (dy * board.cellSize) / 2 };
+    }
+    if (state.blockers.some((b) => b.col === from.col && b.row === from.row)) {
+      fromPt = { x: fromPt.x + (dx * board.cellSize) / 2, y: fromPt.y + (dy * board.cellSize) / 2 };
     }
     drawBeam(board, [fromPt, toPt], color, time);
   });
