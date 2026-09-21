@@ -118,13 +118,14 @@ export const LEVELS = [
     sources: [{ col: 0, row: 1, dir: "right", color: "red" }],
     targets: [
       { col: 12, row: 1, color: "red" },
-      { col: 12, row: 2, color: "red" },
+      { col: 13, row: 2, color: "red" },
       { col: 11, row: 13, color: "red" },
       { col: 7, row: 14, color: "red" },
+      { col: 1, row: 9, color: "red" },
       { col: 2, row: 5, color: "red" },
       { col: 7, row: 5, color: "red" },
       { col: 10, row: 8, color: "red" },
-      { col: 12, row: 9, color: "red" },
+      { col: 5, row: 9, color: "red" },
     ],
     // A spiral wall, wound from the outside in.
     blockers: [
