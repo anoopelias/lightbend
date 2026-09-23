@@ -4,17 +4,17 @@
 // hover/drag flags, ripple timers -- created together whenever a level
 // loads and updated once per animation frame.
 
-// mirror.step 0's reflective face normal points "right" (see reflect() in
-// game_state.js); the glyph itself is drawn as a horizontal line with its
-// reflective side facing local "up", so it needs a quarter turn on top of
-// each step's 45-degree share of the full turn to line the two up. The
-// splitter's step is the line itself (not a face normal, since it's
-// two-sided), and its glyph is a plain horizontal line, so step 0 needs no
-// such offset. The bender's own glyph follows the same "reflective face at
-// local up" convention as the mirror's, but its face normal is a half step
-// (22.5deg) further round than `step` alone would put a mirror's (see
-// bend() in game_state.js), so it needs that same extra offset here to
-// match.
+// mirror.step 0's reflective face normal points "right" (see Mirror's
+// outputDirections() in state/mirror.js); the glyph itself is drawn as a
+// horizontal line with its reflective side facing local "up", so it needs a
+// quarter turn on top of each step's 45-degree share of the full turn to
+// line the two up. The splitter's step is the line itself (not a face
+// normal, since it's two-sided), and its glyph is a plain horizontal line,
+// so step 0 needs no such offset. The bender's own glyph follows the same
+// "reflective face at local up" convention as the mirror's, but its face
+// normal is a half step (22.5deg) further round than `step` alone would put
+// a mirror's (see Bender's outputDirections() in state/bender.js), so it
+// needs that same extra offset here to match.
 const MIRROR_BASE_ANGLE = Math.PI / 2;
 const SPLITTER_BASE_ANGLE = 0;
 const BENDER_BASE_ANGLE = Math.PI / 2 + Math.PI / 8;

@@ -1,6 +1,6 @@
 // ---------- Beam rendering geometry (color-mixing overlaps into runs) ----------
 
-import { COLOR_MIX } from "./game_state.js";
+import { COLOR_MIX } from "./state/game_state.js";
 
 // Breaks every beam down into unit grid-edges, merging the ones different
 // sources' beams both cross so an overlap draws as its mixed color (e.g. a

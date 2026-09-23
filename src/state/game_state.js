@@ -1,24 +1,16 @@
 // ---------- Game logic (grid-space, no pixels, no drawing) ----------
 
-import { loadProgress, saveProgress } from "./storage.js";
-import { LEVELS } from "./levels.js";
+import { loadProgress, saveProgress } from "../storage.js";
+import { LEVELS } from "../levels.js";
+import { DIRS, DIR_ORDER } from "./directions.js";
+import { Mirror } from "./mirror.js";
+import { Splitter } from "./splitter.js";
+import { Bender } from "./bender.js";
 
 export const COLS = 15;
 export const ROWS = 15;
 
-// 8 directions, 45 degrees apart, in clockwise order starting from "right"
-// (matches DIR_ORDER's index so a direction's index * 45deg is its angle).
-export const DIRS = {
-  right: { x: 1, y: 0 },
-  downRight: { x: 1, y: 1 },
-  down: { x: 0, y: 1 },
-  downLeft: { x: -1, y: 1 },
-  left: { x: -1, y: 0 },
-  upLeft: { x: -1, y: -1 },
-  up: { x: 0, y: -1 },
-  upRight: { x: 1, y: -1 },
-};
-const DIR_ORDER = Object.keys(DIRS);
+export { DIRS };
 
 // A composite target color is lit by the exact set of primary beam colors
 // it's mixed from -- a beam of any other color (or a missing one) means the
@@ -76,96 +68,6 @@ export class Conduit {
     const d = DIR_ORDER.indexOf(dir);
     const axis = DIR_ORDER.indexOf(this.dir);
     return d === axis || d === (axis + 4) % 8;
-  }
-}
-
-// A placeable, rotatable piece (Mirror, Splitter, Bender). Subclasses only
-// need `kind` and `outputDirections(dir)` -- given the direction a beam
-// enters from, that returns the directions light leaves in: no elements if
-// the beam is blocked outright, one to keep tracing in a (possibly bent)
-// direction, or two when the hit also branches off a second beam (the
-// first element is always the direction to keep tracing the current beam
-// in, same as the one-element case; the second is the branch).
-class Tool {
-  col = null;
-  row = null;
-  step = 0;
-  placed = false;
-
-  rotate() {
-    this.step = (this.step + 1) % 8;
-  }
-
-  moveTo(col, row) {
-    this.col = col;
-    this.row = row;
-    this.placed = true;
-  }
-
-  isAt(col, row) {
-    return this.placed && col === this.col && row === this.row;
-  }
-}
-
-export class Mirror extends Tool {
-  kind = "mirror";
-
-  // The mirror is a one-sided card resting at one of 8 orientations (45deg
-  // apart, step 0-7): `step` is the direction its reflective face's outward
-  // normal points. A beam entering from `dir` hits that face -- and
-  // reflects -- only if it's heading roughly into it; heading roughly the
-  // same way as the normal instead means it hit the black backing, and is
-  // blocked; heading exactly parallel to the mirror's line means it grazes
-  // past both faces, unaffected.
-  outputDirections(dir) {
-    const d = DIR_ORDER.indexOf(dir);
-    const diff = (d - this.step + 8) % 8;
-    if (diff === 2 || diff === 6) return [dir]; // parallel to the mirror -- passes straight through
-    if (diff !== 3 && diff !== 4 && diff !== 5) return []; // hit the black side -- blocked
-    const line = (this.step + 2) % 8; // the mirror's line is perpendicular to its face normal
-    return [DIR_ORDER[(((2 * line - d) % 8) + 8) % 8]];
-  }
-}
-
-export class Splitter extends Tool {
-  kind = "splitter";
-
-  // The splitter is a glass line resting at one of 8 orientations (45deg
-  // apart, step 0-7); unlike the mirror, `step` is the line's own forward
-  // direction rather than a face normal. A beam hitting it obliquely
-  // (45deg to the line) keeps going (unchanged) AND spawns a second beam
-  // perpendicular to it. One hitting square into the line's face (90deg)
-  // just passes through unaffected. One heading dead into the line's
-  // closed far end -- i.e. straight along the line, but the opposite way
-  // from `step`'s own direction (180deg) -- is blocked outright.
-  outputDirections(dir) {
-    const d = DIR_ORDER.indexOf(dir);
-    const diff = (d - this.step + 8) % 8;
-    if (diff === 4) return []; // the closed end -- blocked
-    if (diff % 2 === 0) return [dir]; // square with the line -- no split
-    return [dir, DIR_ORDER[(((2 * this.step - d) % 8) + 8) % 8]];
-  }
-}
-
-export class Bender extends Tool {
-  kind = "bender";
-
-  // A one-sided card exactly like the mirror -- same reflection physics,
-  // angle in equals angle out off its face -- just with its face normal
-  // sitting half a step (22.5deg) further round than `step` alone would
-  // put a mirror's (see BENDER_BASE_ANGLE in view_state.js). That half-step
-  // offset means no incoming direction ever lands exactly parallel to it,
-  // so unlike the mirror there's no grazing-past case: the 4 directions
-  // roughly facing its normal hit the black backing and are blocked, and
-  // the other 4 reflect -- by 45deg from the two more glancing angles, or
-  // by a steeper 135deg from the two closer to dead-on.
-  outputDirections(dir) {
-    const d = DIR_ORDER.indexOf(dir);
-    const diff = (d - this.step + 8) % 8;
-    if (diff < 3 || diff > 6) return []; // facing roughly the same way as the normal -- hits the black backing, blocked
-    // The face's line sits half a step past a mirror's own (this.step + 2.5);
-    // doubling keeps that .5 as an integer through the reflection formula.
-    return [DIR_ORDER[(((2 * this.step + 5 - d) % 8) + 8) % 8]];
   }
 }
 

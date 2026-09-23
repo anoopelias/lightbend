@@ -1,4 +1,4 @@
-import { COLS, ROWS } from "./game_state.js";
+import { COLS, ROWS } from "./state/game_state.js";
 import { drawMirrorGlyph, drawSplitterGlyph, drawBenderGlyph } from "./draw.js";
 import { baseAngle } from "./view_state.js";
 

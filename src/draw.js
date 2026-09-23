@@ -1,4 +1,4 @@
-import { COLS, ROWS, DIRS } from "./game_state.js";
+import { COLS, ROWS, DIRS } from "./state/game_state.js";
 import { getTheme } from "./theme.js";
 
 // ---------- Drawing (pure: reads entities + transient view, writes to canvas) ----------
