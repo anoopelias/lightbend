@@ -79,8 +79,14 @@ export class Conduit {
   }
 }
 
-export class Mirror {
-  kind = "mirror";
+// A placeable, rotatable piece (Mirror, Splitter, Bender). Subclasses only
+// need `kind` and `outputDirections(dir)` -- given the direction a beam
+// enters from, that returns the directions light leaves in: no elements if
+// the beam is blocked outright, one to keep tracing in a (possibly bent)
+// direction, or two when the hit also branches off a second beam (the
+// first element is always the direction to keep tracing the current beam
+// in, same as the one-element case; the second is the branch).
+class Tool {
   col = null;
   row = null;
   step = 0;
@@ -99,6 +105,10 @@ export class Mirror {
   isAt(col, row) {
     return this.placed && col === this.col && row === this.row;
   }
+}
+
+export class Mirror extends Tool {
+  kind = "mirror";
 
   // The mirror is a one-sided card resting at one of 8 orientations (45deg
   // apart, step 0-7): `step` is the direction its reflective face's outward
@@ -106,78 +116,39 @@ export class Mirror {
   // reflects -- only if it's heading roughly into it; heading roughly the
   // same way as the normal instead means it hit the black backing, and is
   // blocked; heading exactly parallel to the mirror's line means it grazes
-  // past both faces, unaffected. Returns the outgoing direction, or
-  // undefined if blocked.
-  reflect(dir) {
+  // past both faces, unaffected.
+  outputDirections(dir) {
     const d = DIR_ORDER.indexOf(dir);
     const diff = (d - this.step + 8) % 8;
-    if (diff === 2 || diff === 6) return dir; // parallel to the mirror -- passes straight through
-    if (diff !== 3 && diff !== 4 && diff !== 5) return undefined; // hit the black side -- blocked
+    if (diff === 2 || diff === 6) return [dir]; // parallel to the mirror -- passes straight through
+    if (diff !== 3 && diff !== 4 && diff !== 5) return []; // hit the black side -- blocked
     const line = (this.step + 2) % 8; // the mirror's line is perpendicular to its face normal
-    return DIR_ORDER[(((2 * line - d) % 8) + 8) % 8];
+    return [DIR_ORDER[(((2 * line - d) % 8) + 8) % 8]];
   }
 }
 
-export class Splitter {
+export class Splitter extends Tool {
   kind = "splitter";
-  col = null;
-  row = null;
-  step = 0;
-  placed = false;
-
-  rotate() {
-    this.step = (this.step + 1) % 8;
-  }
-
-  moveTo(col, row) {
-    this.col = col;
-    this.row = row;
-    this.placed = true;
-  }
-
-  isAt(col, row) {
-    return this.placed && col === this.col && row === this.row;
-  }
 
   // The splitter is a glass line resting at one of 8 orientations (45deg
   // apart, step 0-7); unlike the mirror, `step` is the line's own forward
   // direction rather than a face normal. A beam hitting it obliquely
-  // (45deg to the line) keeps going AND spawns a second beam perpendicular
-  // to it. One hitting square into the line's face (90deg) just passes
-  // through unaffected. One heading dead into the line's closed far end --
-  // i.e. straight along the line, but the opposite way from `step`'s own
-  // direction (180deg) -- is blocked outright. Returns `{ through, branch }`:
-  // `through` is false only for that last case; `branch` is the second
-  // beam's direction, or undefined when the hit doesn't split one off.
-  split(dir) {
+  // (45deg to the line) keeps going (unchanged) AND spawns a second beam
+  // perpendicular to it. One hitting square into the line's face (90deg)
+  // just passes through unaffected. One heading dead into the line's
+  // closed far end -- i.e. straight along the line, but the opposite way
+  // from `step`'s own direction (180deg) -- is blocked outright.
+  outputDirections(dir) {
     const d = DIR_ORDER.indexOf(dir);
     const diff = (d - this.step + 8) % 8;
-    if (diff === 4) return { through: false, branch: undefined }; // the closed end -- blocked
-    if (diff % 2 === 0) return { through: true, branch: undefined }; // square with the line -- no split
-    return { through: true, branch: DIR_ORDER[(((2 * this.step - d) % 8) + 8) % 8] };
+    if (diff === 4) return []; // the closed end -- blocked
+    if (diff % 2 === 0) return [dir]; // square with the line -- no split
+    return [dir, DIR_ORDER[(((2 * this.step - d) % 8) + 8) % 8]];
   }
 }
 
-export class Bender {
+export class Bender extends Tool {
   kind = "bender";
-  col = null;
-  row = null;
-  step = 0;
-  placed = false;
-
-  rotate() {
-    this.step = (this.step + 1) % 8;
-  }
-
-  moveTo(col, row) {
-    this.col = col;
-    this.row = row;
-    this.placed = true;
-  }
-
-  isAt(col, row) {
-    return this.placed && col === this.col && row === this.row;
-  }
 
   // A one-sided card exactly like the mirror -- same reflection physics,
   // angle in equals angle out off its face -- just with its face normal
@@ -187,15 +158,14 @@ export class Bender {
   // so unlike the mirror there's no grazing-past case: the 4 directions
   // roughly facing its normal hit the black backing and are blocked, and
   // the other 4 reflect -- by 45deg from the two more glancing angles, or
-  // by a steeper 135deg from the two closer to dead-on. Returns the
-  // outgoing direction, or undefined if blocked.
-  bend(dir) {
+  // by a steeper 135deg from the two closer to dead-on.
+  outputDirections(dir) {
     const d = DIR_ORDER.indexOf(dir);
     const diff = (d - this.step + 8) % 8;
-    if (diff < 3 || diff > 6) return undefined; // facing roughly the same way as the normal -- hits the black backing, blocked
+    if (diff < 3 || diff > 6) return []; // facing roughly the same way as the normal -- hits the black backing, blocked
     // The face's line sits half a step past a mirror's own (this.step + 2.5);
     // doubling keeps that .5 as an integer through the reflection formula.
-    return DIR_ORDER[(((2 * this.step + 5 - d) % 8) + 8) % 8];
+    return [DIR_ORDER[(((2 * this.step + 5 - d) % 8) + 8) % 8]];
   }
 }
 
@@ -365,24 +335,11 @@ export class GameState {
         }
 
         const tool = this.toolAt(col, row);
-        if (tool?.kind === "mirror") {
+        if (tool) {
           segment.push({ col, row });
-          const outDir = tool.reflect(dir);
-          if (!outDir) break; // hit the black side -- blocked
-          dir = outDir;
-          continue;
-        }
-        if (tool?.kind === "splitter") {
-          segment.push({ col, row });
-          const { through, branch } = tool.split(dir);
+          const [outDir, branch] = tool.outputDirections(dir);
           if (branch) segments.push(trace(col, row, branch));
-          if (!through) break; // hit the closed end -- blocked
-          continue;
-        }
-        if (tool?.kind === "bender") {
-          segment.push({ col, row });
-          const outDir = tool.bend(dir);
-          if (!outDir) break; // too steep, or hit from behind -- blocked
+          if (!outDir) break; // blocked
           dir = outDir;
           continue;
         }
