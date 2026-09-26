@@ -1,6 +1,20 @@
 import { COLS, ROWS, DIRS } from "./state/game_state.js";
 import { getTheme } from "./theme.js";
 
+// Every other beam color gets a hand-picked darker light-theme variant
+// (see theme.js) that still reads as that hue. White has no hue to
+// preserve that way -- darkening it just washes out toward grey/black, the
+// same look as an unlit/blocked beam, exactly backwards for a color
+// puzzles will later split into RGB. So, like the mirror/splitter/bender
+// materials elsewhere in this file, it's drawn as a fixed silver-white
+// with a dark outline for contrast, regardless of theme, instead of
+// reading theme.beam.white.
+const WHITE_BEAM_COLOR = { core: "#ffffff", mid: "#ffffff", glow: "255, 255, 255", outline: "10, 12, 16" };
+
+function beamColorFor(colorName) {
+  return colorName === "white" ? WHITE_BEAM_COLOR : getTheme().beam[colorName];
+}
+
 // ---------- Drawing (pure: reads entities + transient view, writes to canvas) ----------
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -102,7 +116,7 @@ export function drawSource(board, source, time) {
   const { ctx, cellCenter } = board;
   const c = cellCenter(source.col, source.row);
   const pulse = 1 + 0.08 * Math.sin(time / 260);
-  const color = getTheme().beam[source.color];
+  const color = beamColorFor(source.color);
   const dir = DIRS[source.dir];
   const angle = Math.atan2(dir.y, dir.x);
 
@@ -317,7 +331,12 @@ export function drawTarget(board, target, view, time, hit) {
   const { ctx, cellCenter } = board;
   const c = cellCenter(target.col, target.row);
   const baseRadius = 8;
-  const color = getTheme().beam[target.color];
+  const color = beamColorFor(target.color);
+  // A ring/stroke needs real contrast against the board to read at all;
+  // color.glow alone is enough for every hued color (light theme already
+  // darkens it there), but white has no such darkened variant, so it falls
+  // back to its dark outline for anything drawn as a thin line instead.
+  const ringColor = color.outline ?? color.glow;
 
   if (hit) {
     const pulse = 1 + 0.12 * Math.sin(time / 200);
@@ -333,13 +352,18 @@ export function drawTarget(board, target, view, time, hit) {
     ctx.beginPath();
     ctx.arc(c.x, c.y, baseRadius * pulse, 0, Math.PI * 2);
     ctx.fill();
+    if (color.outline) {
+      ctx.strokeStyle = `rgba(${color.outline}, 0.5)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
   } else {
     ctx.fillStyle = `rgba(${color.glow}, 0.12)`;
     ctx.beginPath();
     ctx.arc(c.x, c.y, baseRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(${color.glow}, 0.55)`;
+    ctx.strokeStyle = `rgba(${ringColor}, 0.55)`;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(c.x, c.y, baseRadius, 0, Math.PI * 2);
@@ -351,7 +375,7 @@ export function drawTarget(board, target, view, time, hit) {
     const duration = 600;
     if (age < duration) {
       const t = age / duration;
-      ctx.strokeStyle = `rgba(${color.glow}, ${1 - t})`;
+      ctx.strokeStyle = `rgba(${ringColor}, ${1 - t})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(c.x, c.y, baseRadius + t * 14, 0, Math.PI * 2);
@@ -365,6 +389,7 @@ export function drawTarget(board, target, view, time, hit) {
 export function drawBeam(board, points, color, time) {
   const { ctx } = board;
   const flicker = 0.85 + 0.15 * Math.sin(time / 90);
+  const paint = beamColorFor(color);
 
   const strokePath = (strokeStyle, lineWidth) => {
     ctx.strokeStyle = strokeStyle;
@@ -378,23 +403,9 @@ export function drawBeam(board, points, color, time) {
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
 
-  if (color === "white") {
-    // White carries every primary color at once -- unlike a hued color,
-    // there's no "darker version of white" for the light theme that still
-    // reads as white rather than grey heading to black (which is exactly
-    // the trouble: it was washing out to near-black on a pale board, the
-    // same look as a *blocked* beam). So, like the mirror/splitter/bender
-    // materials elsewhere in this file, it's drawn as a fixed silver-white
-    // regardless of theme, with a thin dark outline underneath for
-    // contrast against a light-theme board.
-    strokePath("rgba(10, 12, 16, 0.45)", 7);
-    strokePath(`rgba(255, 255, 255, ${0.35 * flicker})`, 6);
-    strokePath(`rgba(255, 255, 255, ${0.95 * flicker})`, 2);
-  } else {
-    const light = getTheme().beam[color];
-    strokePath(`rgba(${light.glow}, ${0.35 * flicker})`, 6); // outer glow
-    strokePath(`rgba(${light.glow}, ${0.95 * flicker})`, 2); // core beam
-  }
+  if (paint.outline) strokePath(`rgba(${paint.outline}, 0.45)`, 7); // dark outline (white only)
+  strokePath(`rgba(${paint.glow}, ${0.35 * flicker})`, 6); // outer glow
+  strokePath(`rgba(${paint.glow}, ${0.95 * flicker})`, 2); // core beam
 
   ctx.restore();
 }
