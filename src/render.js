@@ -28,24 +28,17 @@ const board = new Board({
   shellEl: document.querySelector(".board-shell"),
 });
 
-// Keeps each palette slot the same pixel size as a single grid cell, so the
-// palette reads as "cut from the same grid" at any viewport size instead of
-// using its own fixed size (which looked oversized next to a shrunk mobile
-// board, or mismatched next to a shrunk desktop one).
-function syncPaletteSlotSize() {
-  const size = `${board.cellSize}px`;
-  for (const slot of document.querySelectorAll(".palette-slot")) {
-    slot.style.width = size;
-    slot.style.height = size;
-  }
-}
-
-window.addEventListener("resize", syncPaletteSlotSize);
-window.addEventListener("orientationchange", syncPaletteSlotSize);
-
 const view = new ViewState(state);
 const dragController = new DragController({ board, state, views: view.toolViews });
-syncPaletteSlotSize(); // size the slots DragController just created for the initial level
+
+// Keeps each palette slot (and the icon drawn inside it) the same pixel
+// size as a single grid cell, so the palette reads as "cut from the same
+// grid" at any viewport size instead of using its own fixed size (which
+// looked oversized next to a shrunk mobile board, or mismatched next to a
+// shrunk desktop one). Board's own resize listener (registered first, in
+// its constructor above) updates board.cellSize before this fires.
+window.addEventListener("resize", () => dragController.resizeSlots());
+window.addEventListener("orientationchange", () => dragController.resizeSlots());
 
 setupThemeToggle(document.getElementById("theme-toggle"), () => dragController.syncPalette());
 const levelNav = createLevelNav({ state, view, dragController });

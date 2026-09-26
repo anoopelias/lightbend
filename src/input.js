@@ -52,6 +52,7 @@ function clampCell(col, row) {
 // nothing but input.
 export class DragController {
   constructor({ board, state, views }) {
+    this.board = board;
     this.canvas = board.canvas;
     this.pixelToCell = board.pixelToCell;
     this.state = state;
@@ -73,15 +74,36 @@ export class DragController {
   }
 
   // Builds the palette's fixed grid once -- see PALETTE_COLUMNS/ROWS above.
+  // Slots are sized to the board's cell size right away (not left at the
+  // CSS default) since syncPalette, right after this, draws each icon's
+  // canvas at the slot's current size -- if that ran before the slot had
+  // its real size, the canvas would be baked in too big (the desktop
+  // default) and never shrink back down to fit a mobile-sized slot.
   buildPaletteSlots() {
     this.paletteEl.style.setProperty("--palette-columns", PALETTE_COLUMNS);
     this.paletteEl.innerHTML = "";
+    const size = `${this.board.cellSize}px`;
     this.paletteSlots = Array.from({ length: PALETTE_COLUMNS * PALETTE_ROWS }, () => {
       const slot = document.createElement("div");
       slot.className = "palette-slot palette-slot--empty";
+      slot.style.width = size;
+      slot.style.height = size;
       this.paletteEl.appendChild(slot);
       return slot;
     });
+  }
+
+  // Re-sizes every slot to the board's current cell size and redraws their
+  // icons at that size -- call after the board itself resizes (window
+  // resize/orientation change). A slot's icon is a canvas drawn once at a
+  // fixed pixel size, so it won't scale on its own when the slot's box does.
+  resizeSlots() {
+    const size = `${this.board.cellSize}px`;
+    for (const slot of this.paletteSlots) {
+      slot.style.width = size;
+      slot.style.height = size;
+    }
+    this.syncPalette();
   }
 
   eventToCanvasPoint(e) {
