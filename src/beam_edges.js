@@ -9,7 +9,9 @@ import { COLOR_MIX } from "./state/game_state.js";
 // consecutive unit edges that end up the same color back into one long run,
 // so a plain, non-overlapping stretch is still one continuous stroke rather
 // than many 1-cell strokes whose round caps show up as dots at every cell
-// boundary.
+// boundary. A source's own color can itself be a composite (e.g. white) --
+// COLOR_MIX expands it to the primaries it carries so it mixes with other
+// beams the same way a coincidence of separate red/green/blue beams would.
 export function computeBeamEdges(beams) {
   const unitColors = new Map(); // canonical "c1,r1|c2,r2" -> Set of colors
   const unitEdges = []; // { from, to, key }, one entry per distinct unit edge
@@ -34,7 +36,7 @@ export function computeBeamEdges(beams) {
             unitColors.set(key, new Set());
             unitEdges.push({ from, to, key });
           }
-          unitColors.get(key).add(source.color);
+          for (const c of COLOR_MIX[source.color]) unitColors.get(key).add(c);
           col = nextCol;
           row = nextRow;
         }

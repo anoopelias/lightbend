@@ -208,6 +208,21 @@ export const LEVELS = [
     splitterCount: 2,
     benderCount: 7,
   },
+  {
+    sources: [
+      { col: 0, row: 6, dir: "right", color: "red" },
+      { col: 6, row: 0, dir: "down", color: "blue" },
+      { col: 8, row: 14, dir: "up", color: "white" },
+      { col: 14, row: 8, dir: "left", color: "green" },
+    ],
+    targets: [
+      { col: 6, row: 6, color: "green" },
+      { col: 8, row: 6, color: "white" },
+      { col: 8, row: 8, color: "red" },
+    ],
+    mirrorCount: 5,
+    benderCount: 2,
+  },
 ];
 
 // Every cell from col `c1` to `c2` (inclusive) along a single row.

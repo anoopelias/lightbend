@@ -257,14 +257,17 @@ export class GameState {
   // Traces every source's beam. A target lights up only if the exact set of
   // primary colors passing through its cell matches the set it's mixed from
   // -- nothing missing, nothing extra. A plain red/green/blue target is
-  // just a one-color mix, so this also covers plain color-purity.
+  // just a one-color mix, so this also covers plain color-purity. A source
+  // can itself be a composite color (e.g. white) -- COLOR_MIX expands it to
+  // the primaries it carries, same as it does for a target's own color, so
+  // a white source satisfies a white target but not a plain red one.
   computeBeams() {
     const beams = this.sources.map((source) => ({ source, ...this.computeBeamFor(source) }));
 
     const hitTargets = new Set();
     for (const target of this.targets) {
       const key = `${target.col},${target.row}`;
-      const colorsPresent = new Set(beams.filter((b) => b.visited.has(key)).map((b) => b.source.color));
+      const colorsPresent = new Set(beams.filter((b) => b.visited.has(key)).flatMap((b) => COLOR_MIX[b.source.color]));
       const wanted = COLOR_MIX[target.color];
       if (wanted.length === colorsPresent.size && wanted.every((c) => colorsPresent.has(c))) {
         hitTargets.add(target);
