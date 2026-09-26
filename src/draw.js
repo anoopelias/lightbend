@@ -365,25 +365,36 @@ export function drawTarget(board, target, view, time, hit) {
 export function drawBeam(board, points, color, time) {
   const { ctx } = board;
   const flicker = 0.85 + 0.15 * Math.sin(time / 90);
-  const light = getTheme().beam[color];
+
+  const strokePath = (strokeStyle, lineWidth) => {
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+    ctx.stroke();
+  };
 
   ctx.save();
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
 
-  // outer glow
-  ctx.strokeStyle = `rgba(${light.glow}, ${0.35 * flicker})`;
-  ctx.lineWidth = 6;
-  ctx.beginPath();
-  points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-  ctx.stroke();
-
-  // core beam
-  ctx.strokeStyle = `rgba(${light.glow}, ${0.95 * flicker})`;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-  ctx.stroke();
+  if (color === "white") {
+    // White carries every primary color at once -- unlike a hued color,
+    // there's no "darker version of white" for the light theme that still
+    // reads as white rather than grey heading to black (which is exactly
+    // the trouble: it was washing out to near-black on a pale board, the
+    // same look as a *blocked* beam). So, like the mirror/splitter/bender
+    // materials elsewhere in this file, it's drawn as a fixed silver-white
+    // regardless of theme, with a thin dark outline underneath for
+    // contrast against a light-theme board.
+    strokePath("rgba(10, 12, 16, 0.45)", 7);
+    strokePath(`rgba(255, 255, 255, ${0.35 * flicker})`, 6);
+    strokePath(`rgba(255, 255, 255, ${0.95 * flicker})`, 2);
+  } else {
+    const light = getTheme().beam[color];
+    strokePath(`rgba(${light.glow}, ${0.35 * flicker})`, 6); // outer glow
+    strokePath(`rgba(${light.glow}, ${0.95 * flicker})`, 2); // core beam
+  }
 
   ctx.restore();
 }
