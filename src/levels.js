@@ -217,7 +217,7 @@ export const LEVELS = [
     ],
     targets: [
       { col: 6, row: 6, color: "green" },
-      { col: 8, row: 6, color: "white" },
+      { col: 6, row: 8, color: "white" },
       { col: 8, row: 8, color: "red" },
     ],
     mirrorCount: 5,

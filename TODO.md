@@ -119,7 +119,7 @@ Sources:
 
 Targets:
 1. Row 6, col 6, color green
-1. Row 6, col 8, color white
+1. Row 8, col 6, color white
 1. Row 8, col 8, color red
 
 Mirrors: 5
